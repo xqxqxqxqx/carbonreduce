@@ -1,0 +1,10 @@
+{
+  "us_2020_population": 331002651,
+  "netherlands_2016_co2_emissions_per_capita": 9.62,
+  "netherlands_2016_population": 16981295,
+  "netherlands_2016_household_size": 2.17,
+  "netherlands_2019_daily_travel_car": 36.0,
+  "netherlands_2019_percentage_car_usage_for_work_commute": 19,
+  "default_average_co2_reduction_when_not_at_home": 0.5,
+  "default_average_co2_reduction_when_not_at_office": 0.2
+}
