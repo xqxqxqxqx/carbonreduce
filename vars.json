@@ -1,4 +1,4 @@
-var vars = {
+{
 	"pounds_of_co2_emitted_per_gallon": 19.6,
 	"ratio_of_emissions_of_greenhouse_gases_other_than_co2": 1.01,
 	"passenger_vehicle_fuel_economy": 21.6,
