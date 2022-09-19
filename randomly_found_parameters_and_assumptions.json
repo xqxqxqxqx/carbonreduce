@@ -35,5 +35,6 @@
   "default_average_temperature_11_low_amsterdam": 5,
   "default_average_temperature_11_high_amsterdam": 11,
   "default_average_temperature_12_low_amsterdam": 3,
-  "default_average_temperature_12_high_amsterdam": 8
+  "default_average_temperature_12_high_amsterdam": 8,
+  "energy_dissipation_from_office_buildings": 0.3
 }
