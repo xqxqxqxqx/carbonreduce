@@ -45,7 +45,6 @@
 	"average_variable_cost_per_mile_to_drive": 0.1964,
 	"increase_in_fuel_efficiency_from_performing_regular_maintenance_on_your_vehicles": 0.04,
 	"price_per_gallon_of_gasoline": 3.68,
-
 	"savings_per_degree_of_setback_heating_season": 0.03,
 	"percentage_of_natural_gas_allotted_to_heating": 0.63,
 	"percentage_of_electricity_source_allotted_to_heating": 0.09,
