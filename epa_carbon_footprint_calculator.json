@@ -33,7 +33,6 @@
 	"average_annual_emissions_from_propane_per_household": 5766,
 	"average_annual_emissions_from_propane_per_household_of_one_person": 2243,
 	"average_monthly_cost_of_propane_per_household_of_one_person": 37.16,
-
 	"average_lbs_co2_equivalent_generated_from_waste_per_person_per_year": 692,
 	"average_number_of_pounds_of_co2_equivalent_per_person_per_year_that_could_be_saved_by_recycling_metal": -89.38,
 	"average_number_of_pounds_of_co2_equivalent_per_person_per_year_that_could_be_saved_by_recycling_plastic": -35.56,
@@ -41,7 +40,6 @@
 	"average_number_of_pounds_of_co2_equivalent_per_person_per_year_that_could_be_saved_by_recycling_newspaper": -113.14,
 	"average_number_of_pounds_of_co2_equivalent_per_person_per_year_that_could_be_saved_by_recycling_magazines": -27.46,
 	"average_total_emissions_for_household_of_one_person":  19702,
-
 	"average_variable_cost_per_mile_to_drive": 0.1964,
 	"increase_in_fuel_efficiency_from_performing_regular_maintenance_on_your_vehicles": 0.04,
 	"price_per_gallon_of_gasoline": 3.68,
