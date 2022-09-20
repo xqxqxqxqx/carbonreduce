@@ -53,5 +53,5 @@
   "maximum_nighttime_temperature_office": 24,
   "start_office_hours": "06:00",
   "end_office_hours": "18:00",
-  "daily_office_hours": 12"
+  "daily_office_hours": 12
 }
