@@ -41,5 +41,10 @@
   "office_size_m2_hbp": 46000,
   "office_size_m2_ame": 15919,
   "office_size_m2_cdr": 39000,
-  "average_household_yearly_kg_co2_emissions": 8400
+  "average_household_yearly_kg_co2_emissions": 8400,
+  "percentage_households_couples_living_together": 75,
+  "dutch_population_2020_percent_never_working_from_home": 32.4,
+  "dutch_population_2020_percent_sometimes_working_from_home": 12.9,
+  "dutch_population_2020_percent_usually_working_from_home": 7.6,
+  "default_setting_average_percentage_fte_working_from_home": 50
 }
