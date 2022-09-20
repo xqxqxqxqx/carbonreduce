@@ -46,5 +46,12 @@
   "dutch_population_2020_percent_never_working_from_home": 32.4,
   "dutch_population_2020_percent_sometimes_working_from_home": 12.9,
   "dutch_population_2020_percent_usually_working_from_home": 7.6,
-  "default_setting_average_percentage_fte_working_from_home": 50
+  "default_setting_average_percentage_fte_working_from_home": 50,
+  "minimum_daytime_temperature_office": 19.5,
+  "maximum_daytime_temperature_office": 20.5,
+  "minimum_nighttime_temperature_office": 16,
+  "maximum_nighttime_temperature_office": 24,
+  "start_office_hours": "06:00",
+  "end_office_hours": "18:00",
+  "daily_office_hours": 12"
 }
