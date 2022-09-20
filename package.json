@@ -13,7 +13,10 @@
     "start:compatibility": "es-dev-server --app-index index.html --compatibility all --node-resolve --open --watch"
   },
   "dependencies": {
-    "ing-web": "^2.40.10"
+    "chart.js": "^3.9.1",
+    "d3": "^7.6.1",
+    "ing-web": "^2.40.10",
+    "plotly": "^1.0.6"
   },
   "devDependencies": {
     "@open-wc/demoing-storybook": "^2.4.7",

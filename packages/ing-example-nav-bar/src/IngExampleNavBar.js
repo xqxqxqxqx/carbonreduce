@@ -8,14 +8,14 @@ import {
   spacer16,
   spacer64,
   unsafeCSS,
-  white,
+  ingLogoBlack
 } from 'ing-web';
 
 export class IngExampleNavBar extends LitElement {
   static get styles() {
     return css`
       .header {
-        background-color: ${white};
+        background-color: black;
         height: ${spacer64};
         min-height: ${spacer64};
         box-sizing: border-box;
@@ -40,7 +40,7 @@ export class IngExampleNavBar extends LitElement {
     return html`
       <header class="header">
         <div class="header__content">
-          <div class="ing-logo">${ingLogo}</div>
+          <div class="ing-logo">${ingLogoBlack}</div>
         </div>
       </header>
     `;
