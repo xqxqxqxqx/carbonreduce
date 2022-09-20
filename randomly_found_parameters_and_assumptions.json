@@ -37,5 +37,8 @@
   "default_average_temperature_12_low_amsterdam": 3,
   "default_average_temperature_12_high_amsterdam": 8,
   "energy_dissipation_from_office_buildings": 0.3,
-  "average_yearly_emissions_per_capita_us": 19702
+  "average_yearly_emissions_per_capita_us": 19702,
+  "office_size_m2_hbp": 46000,
+  "office_size_m2_ame": 15919,
+  "office_size_m2_cdr": 39000
 }
