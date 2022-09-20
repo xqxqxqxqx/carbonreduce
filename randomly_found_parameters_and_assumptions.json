@@ -40,5 +40,6 @@
   "average_yearly_emissions_per_capita_us": 19702,
   "office_size_m2_hbp": 46000,
   "office_size_m2_ame": 15919,
-  "office_size_m2_cdr": 39000
+  "office_size_m2_cdr": 39000,
+  "average_household_yearly_kg_co2_emissions": 8400
 }
