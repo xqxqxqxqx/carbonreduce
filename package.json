@@ -1,0 +1,25 @@
+{
+  "name": "ing-app-carbon-reduce",
+  "description": "This application follows ING standards.",
+  "license": "MIT",
+  "author": "ing-app-carbon-reduce",
+  "version": "0.0.0",
+  "scripts": {
+    "storybook": "start-storybook",
+    "storybook:build": "build-storybook",
+    "start:build": "cd dist && es-dev-server --open",
+    "build": "rimraf dist && rollup -c rollup.config.js",
+    "start": "es-dev-server --app-index index.html --node-resolve --open --watch",
+    "start:compatibility": "es-dev-server --app-index index.html --compatibility all --node-resolve --open --watch"
+  },
+  "dependencies": {
+    "ing-web": "^2.40.10"
+  },
+  "devDependencies": {
+    "@open-wc/demoing-storybook": "^2.4.7",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "es-dev-server": "^2.1.0",
+    "ing-kit-rollup-config": "^5.0.1",
+    "rimraf": "^3.0.2"
+  }
+}
