@@ -2,44 +2,51 @@ import {Chart, registerables} from 'chart.js';
 
 Chart.register(...registerables);
 
-export function createPieChart (ctx, dataSets) {
+export function createPolarChart (ctx, dataSet) {
   return new Chart(ctx, {
     type: 'polarArea',
     data: {
       labels: [
-        'Home Heating',
-        'Home Electricity ',
-        'Office Heating',
-        'Office Electricity',
-        'Public Transportation',
-        'Car Transportation'
+        'Office heating',
+        'Home heating',
+        'Car travel',
+        'Non-car travel',
+        'Office electricity',
+        'Home electricity'
       ],
       datasets: [{
-        label: 'Baseline',
-        data: dataSets[0],
+        data: dataSet,
         backgroundColor: [
-          'rgb(255, 99, 132, 0.5)',
-          'rgb(75, 192, 192, 0.5)',
-          'rgb(255, 205, 86, 0.5)',
-          'rgb(201, 203, 207, 0.5)',
-          'rgb(54, 162, 235, 0.5)',
-          'rgb(88, 225, 101, 0.5)'
+          'rgb(255, 178, 136)',
+          'rgb(255, 178, 136)',
+          'rgb(255, 168, 168)',
+          'rgb(255, 168, 168)',
+          'rgb(255, 208, 152)',
+          'rgb(255, 208, 152)'
         ]
-      }, {
-          label: 'Custom',
-          data: dataSets[1],
-          backgroundColor: [
-            'rgb(255, 99, 132)',
-            'rgb(75, 192, 192)',
-            'rgb(255, 205, 86)',
-            'rgb(201, 203, 207)',
-            'rgb(54, 162, 235)',
-            'rgb(88, 225, 101)'
-          ]
-        }
-      ]
+      }]
     },
-    options: {}
+    options: {
+      borderWidth: 3,
+      borderColor: '#404040',
+      scales: {
+        r: {
+          suggestedMax: 12, // TODO: remove hard-code
+          ticks: {
+            color: 'white',
+            backdropColor: 'rgba(0, 0, 0, 0.55)',
+            backdropPadding: 5,
+            z: 1
+          },
+          grid: {
+            color: 'rgba(0, 0, 0, 0.5)'
+          }
+        }
+      },
+      plugins: {
+        legend: false
+      }
+    }
   });
 }
 

@@ -6,10 +6,10 @@ import {
   LitElement,
   ScopedElementsMixin,
   spacer12,
-  black80,
-  spacer32,
   IngTabs,
   IngForm,
+  black80,
+  spacer32
 } from 'ing-web';
 
 import { IngExampleNavBar } from '../../ing-example-nav-bar/src/IngExampleNavBar.js';
@@ -17,7 +17,7 @@ import { IngCardCustom } from "../../ing-card-custom/src/IngCardCustom";
 import { IngSliderCustom } from "../../ing-slider-custom/src/IngSliderCustom";
 import { IngTabPanelCustom } from "../../ing-tab-panel-custom/src/IngTabPanelCustom";
 import { IngTabCustom } from "../../ing-tab-custom/src/IngTabCustom";
-import { createPieChart, createAreaChart } from '../../../helpers/chart_generator.js';
+import { createPolarChart, createAreaChart } from '../../../helpers/chart_generator.js';
 
 import { Chart, registerables } from 'chart.js';
 import {
@@ -45,12 +45,11 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
   static get properties() {
     return {
       title: { type: String },
-      pieChart: { type: Object },
       areaChart: { type: Object },
       ctxPieChart: { type: Object },
       ctxLineChart: { type: Object },
-      baselinePieChart: { type: Array },
-      baselineAreaChart: { type: Array }
+      baselineAreaChart: { type: Array },
+      polarChart: { type: Object }
     };
   }
 
@@ -58,7 +57,6 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     super();
     this.title = 'Carbon Configurator';
 
-    this.baselinePieChart = [456, 134, 136, 765, 837, 448];
     this.baselineAreaChart = [Array.from({length: 100}, () => Math.floor(Math.random() * 100)),
       Array.from({length: 100}, () => Math.floor(Math.random() * 100)),
       Array.from({length: 100}, () => Math.floor(Math.random() * 100))];
@@ -66,13 +64,95 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
 
   firstUpdated() {
     // Grab the canvases where the charts will be injected
-    this.ctxPieChart = this.renderRoot.querySelector( '#myPieChart' ).getContext('2d');
     this.ctxLineChart = this.renderRoot.querySelector( '#myLineChart' ).getContext('2d');
+    this.ctxPolarChart = this.renderRoot.querySelector( '#polar-chart' ).getContext('2d');
+    const ctx2 = this.renderRoot.querySelector( '#polar-chart-baseline' ).getContext('2d');
 
     // Initialise all charts with default baseline
-    this.pieChart = createPieChart(this.ctxPieChart, [this.baselinePieChart, [0, 0, 0, 0, 0, 0]]);
+    this.polarChart = createPolarChart(this.ctxPolarChart, [20, 16, 7, 2, 14, 4]);
     this.areaChart = createAreaChart(this.ctxLineChart, this.baselineAreaChart);
+
+    const dataPolarChart = {
+      labels: [
+        'Office heating',
+        'Home heating',
+        'Car travel',
+        'Non-car travel',
+        'Office electricity',
+        'Home electricity'
+      ],
+      datasets: [{
+        data: [20, 16, 7, 2, 14, 4],
+        backgroundColor: [
+          'rgb(255, 178, 136)',
+          'rgb(255, 178, 136)',
+          'rgb(255, 168, 168)',
+          'rgb(255, 168, 168)',
+          'rgb(255, 208, 152)',
+          'rgb(255, 208, 152)'
+        ]
+      }]
+    };
+
+    const dataPolarChartBaseline = {
+      datasets: [{
+        data: [17, 4, 2, 13, 3, 4]
+      }]
+    };
+
+    const polarChartDataMax = Math.max(
+      ...dataPolarChart.datasets[0].data,
+      ...dataPolarChartBaseline.datasets[0].data
+    );
+
+    this.polarChartBaseline = new Chart(ctx2, {
+      type: 'polarArea',
+      data: dataPolarChartBaseline,
+      options: {
+        borderWidth: 3,
+        borderColor: '#404040',
+        scales: {
+          r: {
+            display: false,
+            suggestedMax: polarChartDataMax,
+          }
+        },
+        plugins: {
+          legend: false,
+          tooltip: false,
+        },
+        elements: {
+          arc: {
+            backgroundColor: function(context) {
+              const mid = 'rgba(0, 0, 0, 0.5)';
+              const start = 'rgba(0, 0, 0, 0)';
+              const end = 'rgba(0, 0, 0, 1)';
+              return this.createRadialGradient(context, start, mid, end);
+            }.bind(this),
+          }
+        }
+      }
+    });
   }
+
+  createRadialGradient(context, c1, c2, c3) {
+    const chartArea = context.chart.chartArea;
+    if (!chartArea) {
+      // This case happens on initial chart load
+      return;
+    }
+    const centerX = (chartArea.left + chartArea.right) / 2;
+    const centerY = (chartArea.top + chartArea.bottom) / 2;
+    const r = context.element.$context.raw / 32 * context.chart.chartArea.width; // TODO: coefficent should be dynamic
+    const ctx = context.chart.ctx;
+    let gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, r);
+    gradient.addColorStop(0, c1);
+    gradient.addColorStop(0.65, c2); // Adjust the mid color stop coefficient to change darkness
+    gradient.addColorStop(1, c3);
+
+    return gradient;
+  }
+
 
   // Submit form programmatically when slider changes so that we can read values from form object modelValue
   _handleSliderValueChange(ev) {
@@ -85,21 +165,19 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     // Get data from form
     const data = ev.currentTarget.modelValue;
     // Destroy old charts
-    this.pieChart.destroy();
+    this.polarChart.destroy();
     this.areaChart.destroy();
     // Redraw charts with updated inputs
     // TODO: Replace parameters with data from sliders
-    this.pieChart = createPieChart(this.ctxPieChart,
+    this.polarChart = createPolarChart(this.ctxPolarChart,
       [
-        this.baselinePieChart, // baseline
-        [
           calcHomeHeatingUsage(1,2),
           calcHomeElectricityUsage(1,2),
           calcOfficeHeatingUsage(1,2),
           calcOfficeElectricityUsage(1,2),
           calcCarUsage(1,2),
           calcPublicTransportUsage(1,2)
-        ]]
+      ]
     );
 
     this.areaChart = createAreaChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
@@ -111,21 +189,19 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     // Get data from form
     const data = ev.currentTarget.modelValue;
     // Destroy old charts
-    this.pieChart.destroy();
+    this.polarChart.destroy();
     this.areaChart.destroy();
     // Redraw charts with updated inputs
     // TODO: Replace parameters with data from sliders
-    this.pieChart = createPieChart(this.ctxPieChart,
+    this.polarChart = createPolarChart(this.ctxPolarChart,
       [
-        this.baselinePieChart, // baseline
-        [
           calcHomeHeatingUsage(1,2),
           calcHomeElectricityUsage(1,2),
           calcOfficeHeatingUsage(1,2),
           calcOfficeElectricityUsage(1,2),
           calcCarUsage(1,2),
           calcPublicTransportUsage(1,2)
-        ]]
+      ]
     );
 
     this.areaChart = createAreaChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
@@ -137,21 +213,19 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     // Get data from form
     const data = ev.currentTarget.modelValue;
     // Destroy old charts
-    this.pieChart.destroy();
+    this.polarChart.destroy();
     this.areaChart.destroy();
     // Redraw charts with updated inputs
     // TODO: Replace parameters with data from sliders
-    this.pieChart = createPieChart(this.ctxPieChart,
+    this.polarChart = createPolarChart(this.ctxPolarChart,
       [
-        this.baselinePieChart, // baseline
-        [
           calcHomeHeatingUsage(1,2),
           calcHomeElectricityUsage(1,2),
           calcOfficeHeatingUsage(1,2),
           calcOfficeElectricityUsage(1,2),
           calcCarUsage(1,2),
           calcPublicTransportUsage(1,2)
-        ]]
+      ]
     );
 
     this.areaChart = createAreaChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
@@ -163,20 +237,18 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     // Get data from form
     const data = ev.currentTarget.modelValue;
     // Destroy old charts
-    this.pieChart.destroy();
+    this.polarChart.destroy();
     this.areaChart.destroy();
     // Redraw charts with updated inputs
-    this.pieChart = createPieChart(this.ctxPieChart,
+    this.polarChart = createPolarChart(this.ctxPolarChart,
       [
-        this.baselinePieChart, // baseline
-        [
           calcHomeHeatingUsage(1,2),
           calcHomeElectricityUsage(1,2),
           calcOfficeHeatingUsage(1,2),
           calcOfficeElectricityUsage(1,2),
           calcCarUsage(1,2),
           calcPublicTransportUsage(1,2)
-        ]]
+      ]
     );
 
     this.areaChart = createAreaChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
@@ -187,14 +259,11 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       <ing-example-nav-bar></ing-example-nav-bar>
       <div class="page-container">
         <div class="column1">
-          <div>
-            <ing-card class="ing_card" style="background-color: black">
-              <h2 slot="heading">${this.title}</h2>
-              <div slot="content">
-                <canvas id="myPieChart" width="400" height="400"></canvas>
-              </div>
-            </ing-card>
-          </div>
+          <div class="polar-area-container">
+            <div>
+              <canvas id="polar-chart-baseline" width="300" height="300"></canvas>
+              <canvas id="polar-chart" width="300" height="300"></canvas>
+            </div>
           <div>
             <ing-card class="ing_card">
               <h2 slot="heading">${this.title}</h2>
@@ -400,6 +469,15 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       .chart {
         width: 800px;
         height: 800px;
+      }
+
+      .polar-area-container {
+        margin: ${spacer32};
+      }
+
+      #polar-chart-baseline {
+        position: absolute;
+        pointer-events: none;
       }
     `;
   }
