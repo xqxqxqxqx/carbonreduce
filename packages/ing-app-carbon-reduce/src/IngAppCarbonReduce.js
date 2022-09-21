@@ -28,7 +28,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
   static get properties() {
     return {
       title: { type: String },
-      polarChart: { type: Object }
+      polarChart: { type: Object },
     };
   }
 
@@ -43,16 +43,15 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
 
     const dataPolarChart = {
       labels: [
-        'Red',
-        'Green',
-        'Yellow',
-        'Grey',
-        'Blue',
-        'Bla'
+        'Office heating',
+        'Home heating',
+        'Car travel',
+        'Non-car travel',
+        'Office electricity',
+        'Home electricity'
       ],
       datasets: [{
-        label: 'My First Dataset',
-        data: [11, 16, 7, 2, 14, 4],
+        data: [20, 16, 7, 2, 14, 4],
         backgroundColor: [
           'rgb(255, 178, 136)',
           'rgb(255, 178, 136)',
@@ -65,26 +64,36 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     };
 
     const dataPolarChartBaseline = {
-      labels: [
-        'Black',
-        'Black',
-        'Black',
-        'Black',
-        'Black',
-        'Black'
-      ],
       datasets: [{
-        label: 'My Second Dataset',
         data: [17, 4, 2, 13, 3, 4]
       }]
     };
+
+    const polarChartDataMax = Math.max(
+      ...dataPolarChart.datasets[0].data,
+      ...dataPolarChartBaseline.datasets[0].data
+    );
 
     this.polarChart = new Chart(ctx, {
       type: 'polarArea',
       data: dataPolarChart,
       options: {
-        borderWidth: 12,
-        borderColor: 'rgba(0, 0, 0, 0)',
+        borderWidth: 3,
+        borderColor: '#404040',
+        scales: {
+          r: {
+            suggestedMax: polarChartDataMax,
+            ticks: {
+              color: 'white',
+              backdropColor: 'rgba(0, 0, 0, 0.55)',
+              backdropPadding: 5,
+              z: 1
+            },
+            grid: {
+              color: 'rgba(0, 0, 0, 0.5)'
+            }
+          }
+        },
         plugins: {
           legend: false
         }
@@ -95,8 +104,14 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       type: 'polarArea',
       data: dataPolarChartBaseline,
       options: {
-        borderWidth: 12,
-        borderColor: 'rgba(0, 0, 0, 0)',
+        borderWidth: 3,
+        borderColor: '#404040',
+        scales: {
+          r: {
+            display: false,
+            suggestedMax: polarChartDataMax,
+          }
+        },
         plugins: {
           legend: false,
           tooltip: false,
@@ -123,7 +138,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     }
     const centerX = (chartArea.left + chartArea.right) / 2;
     const centerY = (chartArea.top + chartArea.bottom) / 2;
-    const r = context.element.$context.raw / 33 * context.chart.chartArea.width;
+    const r = context.element.$context.raw / 32 * context.chart.chartArea.width; // TODO: coefficent should be dynamic
     const ctx = context.chart.ctx;
     let gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, r);
     gradient.addColorStop(0, c1);
@@ -197,7 +212,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       ${linkComponentStyle}
       ${cardComponentStyle}
       :host {
-        background-color: ${black80};
+        background-color: white;
       }
 
       .page-container {
