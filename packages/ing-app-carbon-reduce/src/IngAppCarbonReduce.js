@@ -49,7 +49,8 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       ctxPieChart: { type: Object },
       ctxLineChart: { type: Object },
       baselineAreaChart: { type: Array },
-      polarChart: { type: Object }
+      polarChart: { type: Object },
+      polarChartDataMax: { type: Number }
     };
   }
 
@@ -69,39 +70,17 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     const ctx2 = this.renderRoot.querySelector( '#polar-chart-baseline' ).getContext('2d');
 
     // Initialise all charts with default baseline
-    this.polarChart = createPolarChart(this.ctxPolarChart, [20, 16, 7, 2, 14, 4]);
+    this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, [20, 16, 7, 2, 14, 4]);
     this.areaChart = createAreaChart(this.ctxLineChart, this.baselineAreaChart);
-
-    const dataPolarChart = {
-      labels: [
-        'Office heating',
-        'Home heating',
-        'Car travel',
-        'Non-car travel',
-        'Office electricity',
-        'Home electricity'
-      ],
-      datasets: [{
-        data: [20, 16, 7, 2, 14, 4],
-        backgroundColor: [
-          'rgb(255, 178, 136)',
-          'rgb(255, 178, 136)',
-          'rgb(255, 168, 168)',
-          'rgb(255, 168, 168)',
-          'rgb(255, 208, 152)',
-          'rgb(255, 208, 152)'
-        ]
-      }]
-    };
 
     const dataPolarChartBaseline = {
       datasets: [{
-        data: [17, 4, 2, 13, 3, 4]
+        data: [1700, 400, 200, 1300, 2000, 400]
       }]
     };
 
-    const polarChartDataMax = Math.max(
-      ...dataPolarChart.datasets[0].data,
+    this.polarChartMaxVal = Math.max(
+      ...this._getPolarDataSet(),
       ...dataPolarChartBaseline.datasets[0].data
     );
 
@@ -114,7 +93,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
         scales: {
           r: {
             display: false,
-            suggestedMax: polarChartDataMax,
+            suggestedMax: this.polarChartMaxVal,
           }
         },
         plugins: {
@@ -127,7 +106,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
               const mid = 'rgba(0, 0, 0, 0.5)';
               const start = 'rgba(0, 0, 0, 0)';
               const end = 'rgba(0, 0, 0, 1)';
-              return this.createRadialGradient(context, start, mid, end);
+              return this._createRadialGradient(context, start, mid, end);
             }.bind(this),
           }
         }
@@ -135,7 +114,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     });
   }
 
-  createRadialGradient(context, c1, c2, c3) {
+  _createRadialGradient(context, c1, c2, c3) {
     const chartArea = context.chart.chartArea;
     if (!chartArea) {
       // This case happens on initial chart load
@@ -143,7 +122,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     }
     const centerX = (chartArea.left + chartArea.right) / 2;
     const centerY = (chartArea.top + chartArea.bottom) / 2;
-    const r = context.element.$context.raw / 32 * context.chart.chartArea.width; // TODO: coefficent should be dynamic
+    const r = context.element.$context.raw / (this.polarChartMaxVal*1.8) * context.chart.chartArea.width; // TODO: coefficent should be dynamic
     const ctx = context.chart.ctx;
     let gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, r);
     gradient.addColorStop(0, c1);
@@ -169,16 +148,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     this.areaChart.destroy();
     // Redraw charts with updated inputs
     // TODO: Replace parameters with data from sliders
-    this.polarChart = createPolarChart(this.ctxPolarChart,
-      [
-          calcHomeHeatingUsage(1,2),
-          calcHomeElectricityUsage(1,2),
-          calcOfficeHeatingUsage(1,2),
-          calcOfficeElectricityUsage(1,2),
-          calcCarUsage(1,2),
-          calcPublicTransportUsage(1,2)
-      ]
-    );
+    this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
 
     this.areaChart = createAreaChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
   }
@@ -193,16 +163,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     this.areaChart.destroy();
     // Redraw charts with updated inputs
     // TODO: Replace parameters with data from sliders
-    this.polarChart = createPolarChart(this.ctxPolarChart,
-      [
-          calcHomeHeatingUsage(1,2),
-          calcHomeElectricityUsage(1,2),
-          calcOfficeHeatingUsage(1,2),
-          calcOfficeElectricityUsage(1,2),
-          calcCarUsage(1,2),
-          calcPublicTransportUsage(1,2)
-      ]
-    );
+    this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
 
     this.areaChart = createAreaChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
   }
@@ -217,16 +178,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     this.areaChart.destroy();
     // Redraw charts with updated inputs
     // TODO: Replace parameters with data from sliders
-    this.polarChart = createPolarChart(this.ctxPolarChart,
-      [
-          calcHomeHeatingUsage(1,2),
-          calcHomeElectricityUsage(1,2),
-          calcOfficeHeatingUsage(1,2),
-          calcOfficeElectricityUsage(1,2),
-          calcCarUsage(1,2),
-          calcPublicTransportUsage(1,2)
-      ]
-    );
+    this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
 
     this.areaChart = createAreaChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
   }
@@ -240,18 +192,21 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     this.polarChart.destroy();
     this.areaChart.destroy();
     // Redraw charts with updated inputs
-    this.polarChart = createPolarChart(this.ctxPolarChart,
-      [
-          calcHomeHeatingUsage(1,2),
-          calcHomeElectricityUsage(1,2),
-          calcOfficeHeatingUsage(1,2),
-          calcOfficeElectricityUsage(1,2),
-          calcCarUsage(1,2),
-          calcPublicTransportUsage(1,2)
-      ]
-    );
+    this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
 
     this.areaChart = createAreaChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
+  }
+
+  _getPolarDataSet() {
+    // TODO: input should be taken from sliders
+    return [
+      calcHomeHeatingUsage(1,2),
+      calcHomeElectricityUsage(1,2),
+      calcOfficeHeatingUsage(1,2),
+      calcOfficeElectricityUsage(1,2),
+      calcCarUsage(1,2),
+      calcPublicTransportUsage(1,2)
+    ]
   }
 
   render() {

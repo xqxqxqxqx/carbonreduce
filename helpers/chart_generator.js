@@ -2,7 +2,7 @@ import {Chart, registerables} from 'chart.js';
 
 Chart.register(...registerables);
 
-export function createPolarChart (ctx, dataSet) {
+export function createPolarChart (ctx, maxVal, dataSet) {
   return new Chart(ctx, {
     type: 'polarArea',
     data: {
@@ -31,7 +31,7 @@ export function createPolarChart (ctx, dataSet) {
       borderColor: '#404040',
       scales: {
         r: {
-          suggestedMax: 12, // TODO: remove hard-code
+          suggestedMax: maxVal,
           ticks: {
             color: 'white',
             backdropColor: 'rgba(0, 0, 0, 0.55)',
