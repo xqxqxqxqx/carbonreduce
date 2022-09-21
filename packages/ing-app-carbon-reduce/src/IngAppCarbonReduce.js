@@ -169,6 +169,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
               <canvas id="polar-chart-baseline" width="300" height="300"></canvas>
               <canvas id="polar-chart" width="300" height="300"></canvas>
             </div>
+          </div>
           <div>
             <ing-card class="ing_card">
               <h2 slot="heading">${this.title}</h2>
