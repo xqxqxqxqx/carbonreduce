@@ -3,35 +3,48 @@ import {
   css,
   elevation1Mixin,
   html,
-  ingLogo,
   LitElement,
   spacer16,
   spacer64,
   unsafeCSS,
-  ingLogoBlack
+  spacer40,
+  white,
+  font24Mixin
 } from 'ing-web';
 
-export class IngExampleNavBar extends LitElement {
+export class IngHeader extends LitElement {
   static get styles() {
     return css`
       .header {
+        position: fixed;
+        top: 0;
+        width: 100%;
         background-color: black;
         height: ${spacer64};
         min-height: ${spacer64};
         box-sizing: border-box;
+        z-index: 1;
         ${elevation1Mixin()}
       }
 
       .header__content {
         max-width: ${unsafeCSS(breakpoint1280)}px;
-        margin: 0 auto;
+        height: 100%;
+        display: flex;
+        align-items: center;
         padding: 0 ${spacer16};
       }
 
       .ing-logo {
         display: inline-block;
-        height: ${spacer64};
+        height: ${spacer40};
         width: auto;
+      }
+
+      .title {
+        ${font24Mixin()};
+        color: ${white};
+        margin: 0 ${spacer16};
       }
     `;
   }
@@ -40,7 +53,8 @@ export class IngExampleNavBar extends LitElement {
     return html`
       <header class="header">
         <div class="header__content">
-          <div class="ing-logo">${ingLogoBlack}</div>
+          <img class="ing-logo" src="../../assets/lionwhite.png" alt="ING logo">
+          <div class="title">Carbon Reduce Dashboard</div>
         </div>
       </header>
     `;

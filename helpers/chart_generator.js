@@ -1,6 +1,11 @@
 import {Chart, registerables} from 'chart.js';
+import * as helpers from 'chart.js/helpers';
 
 Chart.register(...registerables);
+
+const COLOR_HOME = 'rgb(255, 208, 152)';
+const COLOR_OFFICE = 'rgb(255, 178, 136)';
+const COLOR_TRAVEL = 'rgb(255, 168, 168)';
 
 export function createPolarChart (ctx, maxVal, dataSet) {
   return new Chart(ctx, {
@@ -8,21 +13,21 @@ export function createPolarChart (ctx, maxVal, dataSet) {
     data: {
       labels: [
         'Office heating',
-        'Home heating',
+        'Office electricity',
         'Car travel',
         'Non-car travel',
-        'Office electricity',
-        'Home electricity'
+        'Home electricity',
+        'Home heating'
       ],
       datasets: [{
         data: dataSet,
         backgroundColor: [
-          'rgb(255, 178, 136)',
-          'rgb(255, 178, 136)',
-          'rgb(255, 168, 168)',
-          'rgb(255, 168, 168)',
-          'rgb(255, 208, 152)',
-          'rgb(255, 208, 152)'
+          COLOR_OFFICE,
+          COLOR_OFFICE,
+          COLOR_TRAVEL,
+          COLOR_TRAVEL,
+          COLOR_HOME,
+          COLOR_HOME
         ]
       }]
     },
@@ -39,7 +44,8 @@ export function createPolarChart (ctx, maxVal, dataSet) {
             z: 1
           },
           grid: {
-            color: 'rgba(0, 0, 0, 0.5)'
+            color: 'rgba(255, 255, 255, 0.3)',
+            borderDash: [3]
           }
         }
       },
@@ -85,32 +91,32 @@ export function createPolarChartBaseline (ctx, maxVal, dataSet) {
   });
 }
 
-export function createAreaChart (ctx, dataSets) {
+export function createLineChart (ctx, dataSets) {
   return new Chart(ctx, {
     type: 'line',
     data: {
       labels: Array.from(Array(7).keys()),
       datasets: [
         {
-          label: 'Home Consumption',
-          data: dataSets[0],
-          fill: {
-            target: 'origin',
-            above: 'rgba(75,192,192,0.5)',   // Area will be red above the origin
-            below: 'rgba(0,0,255,0)'    // And blue below the origin
-          },
-          borderColor: 'rgb(75, 192, 192)',
-          tension: 0
-        },
-        {
           label: 'Travel Consumption',
           data: dataSets[1],
           fill: {
             target: 'stack',
-            above: 'rgba(186,108,108,0.5)',   // Area will be red above the origin
-            below: 'rgba(0,0,255,0)'    // And blue below the origin
+            above: helpers.color(COLOR_TRAVEL).alpha(0.35).rgbString(),   // Area will be red above the origin
+            below: 'rgba(0, 0, 255, 0)'    // And blue below the origin
           },
-          borderColor: 'rgb(186,108,108)',
+          borderColor: COLOR_TRAVEL,
+          tension: 0
+        },
+        {
+          label: 'Home Consumption',
+          data: dataSets[0],
+          fill: {
+            target: 'origin',
+            above: helpers.color(COLOR_HOME).alpha(0.35).rgbString(),   // Area will be red above the origin
+            below: 'rgba(0, 0, 255, 0)'    // And blue below the origin
+          },
+          borderColor: COLOR_HOME,
           tension: 0
         },
         {
@@ -118,10 +124,10 @@ export function createAreaChart (ctx, dataSets) {
           data: dataSets[2],
           fill: {
             target: 'stack',
-            above: 'rgba(112,223,55,0.5)',   // Area will be red above the origin
-            below: 'rgba(0,0,255,0)'    // And blue below the origin
+            above: helpers.color(COLOR_OFFICE).alpha(0.35).rgbString(),   // Area will be red above the origin
+            below: 'rgba(0, 0, 255, 0)'    // And blue below the origin
           },
-          borderColor: 'rgb(112, 223, 55)',
+          borderColor: COLOR_OFFICE,
           tension: 0
         }
       ]

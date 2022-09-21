@@ -9,15 +9,18 @@ import {
   IngTabs,
   IngForm,
   black80,
-  spacer32
+  spacer24,
+  white,
+  font19Mixin,
+  spacer64
 } from 'ing-web';
 
-import { IngExampleNavBar } from '../../ing-example-nav-bar/src/IngExampleNavBar.js';
+import { IngHeader } from '../../ing-example-nav-bar/src/IngHeader.js';
 import { IngCardCustom } from "../../ing-card-custom/src/IngCardCustom";
 import { IngSliderCustom } from "../../ing-slider-custom/src/IngSliderCustom";
 import { IngTabPanelCustom } from "../../ing-tab-panel-custom/src/IngTabPanelCustom";
 import { IngTabCustom } from "../../ing-tab-custom/src/IngTabCustom";
-import { createPolarChart, createPolarChartBaseline, createAreaChart } from '../../../helpers/chart_generator.js';
+import { createPolarChart, createPolarChartBaseline, createLineChart } from '../../../helpers/chart_generator.js';
 
 import { Chart, registerables } from 'chart.js';
 import {
@@ -32,7 +35,7 @@ Chart.register(...registerables);
 export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
   static get scopedElements() {
     return {
-      'ing-example-nav-bar': IngExampleNavBar,
+      'ing-example-nav-bar': IngHeader,
       'ing-card': IngCardCustom,
       'ing-input-range': IngSliderCustom,
       'ing-tabs': IngTabs,
@@ -45,11 +48,11 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
   static get properties() {
     return {
       title: { type: String },
-      areaChart: { type: Object },
+      lineChart: { type: Object },
       ctxPolarChart: { type: Object },
       ctxPolarChartBaseline: { type: Object },
       ctxLineChart: { type: Object },
-      baselineAreaChart: { type: Array },
+      lineChartBaseline: { type: Array },
       polarChart: { type: Object },
       polarChartDataMax: { type: Number },
       polarChartBaselineDataset: { type: Object }
@@ -59,28 +62,28 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
   constructor() {
     super();
     this.title = 'Carbon Configurator';
-    this.polarChartBaselineDataset = [300, 1000, 200, 550, 100, 350];
+    this.polarChartBaselineDataset = [300, 100, 200, 450, 600, 850];
     
     this.polarChartMaxVal = Math.max(
       ...this._getPolarDataSet(),
       ...this.polarChartBaselineDataset
     );
 
-    this.baselineAreaChart = [Array.from({length: 100}, () => Math.floor(Math.random() * 100)),
+    this.lineChartBaseline = [Array.from({length: 100}, () => Math.floor(Math.random() * 100)),
       Array.from({length: 100}, () => Math.floor(Math.random() * 100)),
       Array.from({length: 100}, () => Math.floor(Math.random() * 100))];
   }
 
   firstUpdated() {
     // Grab the canvases where the charts will be injected
-    this.ctxLineChart = this.renderRoot.querySelector( '#myLineChart' ).getContext('2d');
+    this.ctxLineChart = this.renderRoot.querySelector( '#line-chart' ).getContext('2d');
     this.ctxPolarChart = this.renderRoot.querySelector( '#polar-chart' ).getContext('2d');
     this.ctxPolarChartBaseline = this.renderRoot.querySelector( '#polar-chart-baseline' ).getContext('2d');
 
     // Initialise all charts with default baseline
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
     this.ctxPolarChartBaseline = createPolarChartBaseline(this.ctxPolarChartBaseline, this.polarChartMaxVal, this.polarChartBaselineDataset);
-    this.areaChart = createAreaChart(this.ctxLineChart, this.baselineAreaChart);
+    this.lineChart = createLineChart(this.ctxLineChart, this.lineChartBaseline);
   }
 
   // Submit form programmatically when slider changes so that we can read values from form object modelValue
@@ -95,12 +98,12 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     const data = ev.currentTarget.modelValue;
     // Destroy old charts
     this.polarChart.destroy();
-    this.areaChart.destroy();
+    this.lineChart.destroy();
     // Redraw charts with updated inputs
     // TODO: Replace parameters with data from sliders
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
 
-    this.areaChart = createAreaChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
+    this.lineChart = createLineChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
   }
 
   // Update charts when one of the Home sliders has changed
@@ -110,12 +113,12 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     const data = ev.currentTarget.modelValue;
     // Destroy old charts
     this.polarChart.destroy();
-    this.areaChart.destroy();
+    this.lineChart.destroy();
     // Redraw charts with updated inputs
     // TODO: Replace parameters with data from sliders
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
 
-    this.areaChart = createAreaChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
+    this.lineChart = createLineChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
   }
 
   // Update charts when one of the Office sliders has changed
@@ -125,12 +128,12 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     const data = ev.currentTarget.modelValue;
     // Destroy old charts
     this.polarChart.destroy();
-    this.areaChart.destroy();
+    this.lineChart.destroy();
     // Redraw charts with updated inputs
     // TODO: Replace parameters with data from sliders
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
 
-    this.areaChart = createAreaChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
+    this.lineChart = createLineChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
   }
 
   // Update charts when one of the Travel sliders has changed
@@ -140,11 +143,11 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     const data = ev.currentTarget.modelValue;
     // Destroy old charts
     this.polarChart.destroy();
-    this.areaChart.destroy();
+    this.lineChart.destroy();
     // Redraw charts with updated inputs
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
 
-    this.areaChart = createAreaChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
+    this.lineChart = createLineChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
   }
 
   _getPolarDataSet() {
@@ -164,13 +167,19 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       <ing-example-nav-bar></ing-example-nav-bar>
       <div class="page-container">
         <div class="column1">
-          <div class="polar-area-container">
-            <div>
+          <div>
+            <div class="polar-chart">
               <canvas id="polar-chart-baseline" width="300" height="300"></canvas>
               <canvas id="polar-chart" width="300" height="300"></canvas>
             </div>
           </div>
           <div>
+            <ing-card class="ing_card">
+              <div slot="heading" class="card-title">Back-to-office Impact Overview</div>
+              <div slot="content">
+                <canvas id="line-chart" width="400" height="100"></canvas>
+              </div>
+            </ing-card>
             <ing-card class="ing_card">
               <h2 slot="heading">${this.title}</h2>
               <p slot="content"> Let's win this! </p>
@@ -182,9 +191,8 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
           </div>
         </div>
         <div class="column2">
-          <ing-card class="ing_card">
-            <h2 slot="heading">${this.title}</h2>
-            <div slot="content">
+          <ing-card class="ing_card slider-card">
+            <div slot="content" class="slider-content">
               <ing-form  @submit="${ev => this._handleGeneralValueChange(ev)}"">
                 <form>
                   <ing-input-range
@@ -328,12 +336,6 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
               </ing-tabs>
             </div>
           </ing-card>
-          <ing-card class="ing_card">
-            <h2 slot="heading">${this.title}</h2>
-            <div slot="content">
-              <canvas id="myLineChart" width="400" height="400"></canvas>
-            </div>
-          </ing-card>
         </div>
       </div>
     `;
@@ -348,8 +350,10 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       }
 
       .page-container {
+        position: relative;
+        top: ${spacer64};
         text-align: center;
-        margin: ${spacer32};
+        margin: ${spacer12}  ${spacer24};
         display: flex;
         gap: ${spacer12}
       }
@@ -377,14 +381,47 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
         height: 800px;
       }
 
-      .polar-area-container {
-        margin: ${spacer32};
+      .polar-chart {
+        width: 67%;
+        margin: auto;
       }
 
       #polar-chart-baseline {
         position: absolute;
         pointer-events: none;
       }
+
+      .card-title {
+        ${font19Mixin()};
+        color: ${white};
+      }
+
+      .slider-card {
+        position: fixed;
+        right: ${spacer24};
+        width: 64vh;
+      }
+
+      .slider-content {
+        height: calc(100vh - 142px);
+        overflow-y: auto;
+        padding-right: 24px;
+      }
+
+      /* Start of Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #888; 
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #555; 
+      }
+      /* End of Custom scrollbar */
     `;
   }
 }
