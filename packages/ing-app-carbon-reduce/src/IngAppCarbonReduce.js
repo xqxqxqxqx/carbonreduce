@@ -5,9 +5,9 @@ import {
   linkComponentStyle,
   LitElement,
   ScopedElementsMixin,
-  spacer64,
   spacer12,
-  black80
+  black80,
+  spacer32
 } from 'ing-web';
 
 import { IngExampleNavBar } from '../../ing-example-nav-bar/src/IngExampleNavBar.js';
@@ -28,7 +28,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
   static get properties() {
     return {
       title: { type: String },
-      myChart: { type: Object }
+      polarChart: { type: Object }
     };
   }
 
@@ -38,34 +38,99 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
   }
 
   firstUpdated() {
-    const ctx = this.renderRoot.querySelector( '#myChart' ).getContext('2d');
+    const ctx = this.renderRoot.querySelector( '#polar-chart' ).getContext('2d');
+    const ctx2 = this.renderRoot.querySelector( '#polar-chart-baseline' ).getContext('2d');
 
-    const data = {
+    const dataPolarChart = {
       labels: [
         'Red',
         'Green',
         'Yellow',
         'Grey',
-        'Blue'
+        'Blue',
+        'Bla'
       ],
       datasets: [{
         label: 'My First Dataset',
-        data: [11, 16, 7, 3, 14],
+        data: [11, 16, 7, 2, 14, 4],
         backgroundColor: [
-          'rgb(255, 99, 132)',
-          'rgb(75, 192, 192)',
-          'rgb(255, 205, 86)',
-          'rgb(201, 203, 207)',
-          'rgb(54, 162, 235)'
+          'rgb(255, 178, 136)',
+          'rgb(255, 178, 136)',
+          'rgb(255, 168, 168)',
+          'rgb(255, 168, 168)',
+          'rgb(255, 208, 152)',
+          'rgb(255, 208, 152)'
         ]
       }]
     };
 
-    this.myChart = new Chart(ctx, {
+    const dataPolarChartBaseline = {
+      labels: [
+        'Black',
+        'Black',
+        'Black',
+        'Black',
+        'Black',
+        'Black'
+      ],
+      datasets: [{
+        label: 'My Second Dataset',
+        data: [17, 4, 2, 13, 3, 4]
+      }]
+    };
+
+    this.polarChart = new Chart(ctx, {
       type: 'polarArea',
-      data: data,
-      options: {}
+      data: dataPolarChart,
+      options: {
+        borderWidth: 12,
+        borderColor: 'rgba(0, 0, 0, 0)',
+        plugins: {
+          legend: false
+        }
+      }
     });
+
+    this.polarChartBaseline = new Chart(ctx2, {
+      type: 'polarArea',
+      data: dataPolarChartBaseline,
+      options: {
+        borderWidth: 12,
+        borderColor: 'rgba(0, 0, 0, 0)',
+        plugins: {
+          legend: false,
+          tooltip: false,
+        },
+        elements: {
+          arc: {
+            backgroundColor: function(context) {
+              const mid = 'rgba(0, 0, 0, 0.5)';
+              const start = 'rgba(0, 0, 0, 0)';
+              const end = 'rgba(0, 0, 0, 1)';
+              return this.createRadialGradient3(context, start, mid, end);
+            }.bind(this),
+          }
+        }
+      }
+    });
+  }
+
+  createRadialGradient3(context, c1, c2, c3) {
+    const chartArea = context.chart.chartArea;
+    if (!chartArea) {
+      // This case happens on initial chart load
+      return;
+    }
+    const centerX = (chartArea.left + chartArea.right) / 2;
+    const centerY = (chartArea.top + chartArea.bottom) / 2;
+    const r = context.element.$context.raw / 33 * context.chart.chartArea.width;
+    const ctx = context.chart.ctx;
+    let gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, r);
+    gradient.addColorStop(0, c1);
+    gradient.addColorStop(0.65, c2); // Adjust the mid color stop coefficient to change darkness
+    gradient.addColorStop(1, c3);
+  
+    return gradient;
   }
 
   render() {
@@ -73,13 +138,11 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       <ing-example-nav-bar></ing-example-nav-bar>
       <div class="page-container">
         <div class="column1">
-          <div>
-            <ing-card class="ing_card" style="background-color: black">
-              <h2 slot="heading">${this.title}</h2>
-              <div slot="content">
-                <canvas id="myChart" width="400" height="400"></canvas>
-              </div>
-            </ing-card>
+          <div class="polar-area-container">
+            <div>
+              <canvas id="polar-chart-baseline" width="300" height="300"></canvas>
+              <canvas id="polar-chart" width="300" height="300"></canvas>
+            </div>
           </div>
           <div>
             <ing-card class="ing_card">
@@ -139,7 +202,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
 
       .page-container {
         text-align: center;
-        margin: ${spacer64};
+        margin: ${spacer32};
         display: flex;
         gap: ${spacer12}
       }
@@ -165,6 +228,15 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       .chart {
         width: 800px;
         height: 800px;
+      }
+
+      .polar-area-container {
+        margin: ${spacer32};
+      }
+
+      #polar-chart-baseline {
+        position: absolute;
+        pointer-events: none;
       }
     `;
   }
