@@ -17,7 +17,7 @@ import { IngCardCustom } from "../../ing-card-custom/src/IngCardCustom";
 import { IngSliderCustom } from "../../ing-slider-custom/src/IngSliderCustom";
 import { IngTabPanelCustom } from "../../ing-tab-panel-custom/src/IngTabPanelCustom";
 import { IngTabCustom } from "../../ing-tab-custom/src/IngTabCustom";
-import { createPolarChart, createAreaChart } from '../../../helpers/chart_generator.js';
+import { createPolarChart, createPolarChartBaseline, createAreaChart } from '../../../helpers/chart_generator.js';
 
 import { Chart, registerables } from 'chart.js';
 import {
@@ -46,17 +46,25 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     return {
       title: { type: String },
       areaChart: { type: Object },
-      ctxPieChart: { type: Object },
+      ctxPolarChart: { type: Object },
+      ctxPolarChartBaseline: { type: Object },
       ctxLineChart: { type: Object },
       baselineAreaChart: { type: Array },
       polarChart: { type: Object },
-      polarChartDataMax: { type: Number }
+      polarChartDataMax: { type: Number },
+      polarChartBaselineDataset: { type: Object }
     };
   }
 
   constructor() {
     super();
     this.title = 'Carbon Configurator';
+    this.polarChartBaselineDataset = [300, 1000, 200, 550, 100, 350];
+    
+    this.polarChartMaxVal = Math.max(
+      ...this._getPolarDataSet(),
+      ...this.polarChartBaselineDataset
+    );
 
     this.baselineAreaChart = [Array.from({length: 100}, () => Math.floor(Math.random() * 100)),
       Array.from({length: 100}, () => Math.floor(Math.random() * 100)),
@@ -67,71 +75,13 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     // Grab the canvases where the charts will be injected
     this.ctxLineChart = this.renderRoot.querySelector( '#myLineChart' ).getContext('2d');
     this.ctxPolarChart = this.renderRoot.querySelector( '#polar-chart' ).getContext('2d');
-    const ctx2 = this.renderRoot.querySelector( '#polar-chart-baseline' ).getContext('2d');
+    this.ctxPolarChartBaseline = this.renderRoot.querySelector( '#polar-chart-baseline' ).getContext('2d');
 
     // Initialise all charts with default baseline
-    this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, [20, 16, 7, 2, 14, 4]);
+    this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
+    this.ctxPolarChartBaseline = createPolarChartBaseline(this.ctxPolarChartBaseline, this.polarChartMaxVal, this.polarChartBaselineDataset);
     this.areaChart = createAreaChart(this.ctxLineChart, this.baselineAreaChart);
-
-    const dataPolarChartBaseline = {
-      datasets: [{
-        data: [1700, 400, 200, 1300, 2000, 400]
-      }]
-    };
-
-    this.polarChartMaxVal = Math.max(
-      ...this._getPolarDataSet(),
-      ...dataPolarChartBaseline.datasets[0].data
-    );
-
-    this.polarChartBaseline = new Chart(ctx2, {
-      type: 'polarArea',
-      data: dataPolarChartBaseline,
-      options: {
-        borderWidth: 3,
-        borderColor: '#404040',
-        scales: {
-          r: {
-            display: false,
-            suggestedMax: this.polarChartMaxVal,
-          }
-        },
-        plugins: {
-          legend: false,
-          tooltip: false,
-        },
-        elements: {
-          arc: {
-            backgroundColor: function(context) {
-              const mid = 'rgba(0, 0, 0, 0.5)';
-              const start = 'rgba(0, 0, 0, 0)';
-              const end = 'rgba(0, 0, 0, 1)';
-              return this._createRadialGradient(context, start, mid, end);
-            }.bind(this),
-          }
-        }
-      }
-    });
   }
-
-  _createRadialGradient(context, c1, c2, c3) {
-    const chartArea = context.chart.chartArea;
-    if (!chartArea) {
-      // This case happens on initial chart load
-      return;
-    }
-    const centerX = (chartArea.left + chartArea.right) / 2;
-    const centerY = (chartArea.top + chartArea.bottom) / 2;
-    const r = context.element.$context.raw / (this.polarChartMaxVal*1.8) * context.chart.chartArea.width; // TODO: coefficent should be dynamic
-    const ctx = context.chart.ctx;
-    let gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, r);
-    gradient.addColorStop(0, c1);
-    gradient.addColorStop(0.65, c2); // Adjust the mid color stop coefficient to change darkness
-    gradient.addColorStop(1, c3);
-
-    return gradient;
-  }
-
 
   // Submit form programmatically when slider changes so that we can read values from form object modelValue
   _handleSliderValueChange(ev) {

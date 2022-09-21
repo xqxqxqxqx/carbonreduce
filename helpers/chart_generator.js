@@ -50,6 +50,41 @@ export function createPolarChart (ctx, maxVal, dataSet) {
   });
 }
 
+export function createPolarChartBaseline (ctx, maxVal, dataSet) {
+  return new Chart(ctx, {
+    type: 'polarArea',
+    data: {
+      datasets: [{
+        data: dataSet,
+      }]
+    },
+    options: {
+      borderWidth: 3,
+      borderColor: '#404040',
+      scales: {
+        r: {
+          display: false,
+          suggestedMax: maxVal,
+        }
+      },
+      plugins: {
+        legend: false,
+        tooltip: false,
+      },
+      elements: {
+        arc: {
+          backgroundColor: function(context) {
+            const mid = 'rgba(0, 0, 0, 0.5)';
+            const start = 'rgba(0, 0, 0, 0)';
+            const end = 'rgba(0, 0, 0, 1)';
+            return _createRadialGradient(context, start, mid, end, maxVal);
+          }.bind(this),
+        }
+      }
+    }
+  });
+}
+
 export function createAreaChart (ctx, dataSets) {
   return new Chart(ctx, {
     type: 'line',
@@ -99,4 +134,22 @@ export function createAreaChart (ctx, dataSets) {
       }
     }
   });
+}
+
+function _createRadialGradient(context, c1, c2, c3, maxVal) {
+  const chartArea = context.chart.chartArea;
+  if (!chartArea) {
+    // This case happens on initial chart load
+    return;
+  }
+  const centerX = (chartArea.left + chartArea.right) / 2;
+  const centerY = (chartArea.top + chartArea.bottom) / 2;
+  const r = context.element.$context.raw / (maxVal*1.8) * context.chart.chartArea.width;
+  const ctx = context.chart.ctx;
+  let gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, r);
+  gradient.addColorStop(0, c1);
+  gradient.addColorStop(0.65, c2); // Adjust the mid color stop coefficient to change darkness
+  gradient.addColorStop(1, c3);
+
+  return gradient;
 }
