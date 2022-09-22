@@ -25,7 +25,11 @@ import { IngTabPanelCustom } from "../../ing-tab-panel-custom/src/IngTabPanelCus
 import { IngTabCustom } from "../../ing-tab-custom/src/IngTabCustom";
 import { IngAccordionContentCustom } from "../../ing-accordion-content-custom/src/IngAccordionContentCustom";
 import { IngAccordionInvokerButtonCustom } from "../../ing-accordion-invoker-button-custom/src/IngAccordionInvokerButtonCustom";
-import { createPolarChart, createPolarChartBaseline, createLineChart } from '../../../helpers/chart_generator.js';
+import {
+  createPolarChart,
+  createPolarChartBaseline,
+  createAreaChart,
+} from '../../../helpers/chart_generator.js';
 
 import {
   calcCarUsage,
@@ -59,20 +63,26 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
   static get properties() {
     return {
       title: { type: String },
-      lineChart: { type: Object },
+      areaChart: { type: Object },
       ctxPolarChart: { type: Object },
       ctxPolarChartBaseline: { type: Object },
-      ctxLineChart: { type: Object },
-      lineChartBaseline: { type: Array },
+      ctxAreaChart: { type: Object },
+      areaChartBaseline: { type: Array },
       polarChart: { type: Object },
       polarChartDataMax: { type: Number },
-      polarChartBaselineDataset: { type: Object }
+      polarChartBaselineDataset: { type: Object },
+      b20SliderValue: { type: Number },
+      daysPerWeekSliderValue: { type: Number },
+      goalCO2: { type: Number },
     };
   }
 
   constructor() {
     super();
     registerDefaultIconsets();
+
+    this.b20SliderValue = 40;
+    this.goalCO2 = 150;
 
     this.title = 'Carbon Configurator';
     this.polarChartBaselineDataset = [300, 100, 200, 450, 600, 850];
@@ -82,22 +92,21 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       ...this.polarChartBaselineDataset
     );
 
-    this.lineChartBaseline = [Array.from({length: 100}, () => Math.floor(Math.random() * 100)),
-      Array.from({length: 100}, () => Math.floor(Math.random() * 100)),
-      Array.from({length: 100}, () => Math.floor(Math.random() * 100))];
+    this.areaChartBaseline = [Array.from({length: 101}, () => Math.floor(Math.random() * 100)),
+      Array.from({length: 101}, () => Math.floor(Math.random() * 100)),
+      Array.from({length: 101}, () => Math.floor(Math.random() * 100))];
   }
 
   firstUpdated() {
     // Grab the canvases where the charts will be injected
-    this.ctxLineChart = this.renderRoot.querySelector( '#line-chart' ).getContext('2d');
+    this.ctxAreaChart = this.renderRoot.querySelector( '#area-chart' ).getContext('2d');
     this.ctxPolarChart = this.renderRoot.querySelector( '#polar-chart' ).getContext('2d');
     this.ctxPolarChartBaseline = this.renderRoot.querySelector( '#polar-chart-baseline' ).getContext('2d');
 
     // Initialise all charts with default baseline
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
     this.ctxPolarChartBaseline = createPolarChartBaseline(this.ctxPolarChartBaseline, this.polarChartMaxVal, this.polarChartBaselineDataset);
-    this.lineChart = createLineChart(this.ctxLineChart, this.lineChartBaseline);
-
+    this.areaChart = createAreaChart(this.ctxAreaChart, this.areaChartBaseline, this.goalCO2, this.b20SliderValue);
     // Sliders' position is set as fixed causing the element taken out of flow of DOM and flexbox
     // This is a workaround to configure its width in flex-box way
     setTimeout(function(){
@@ -116,14 +125,15 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
   _handleGeneralValueChange(ev) {
     // Get data from form
     const data = ev.currentTarget.modelValue;
+    this.b20SliderValue = data['backToOffice'];
     // Destroy old charts
     this.polarChart.destroy();
-    this.lineChart.destroy();
+    this.areaChart.destroy();
     // Redraw charts with updated inputs
     // TODO: Replace parameters with data from sliders
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
 
-    this.lineChart = createLineChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
+    this.areaChart = createAreaChart(this.ctxAreaChart, this._getAreaDataSet(), this.goalCO2, this.b20SliderValue);
   }
 
   // Update charts when one of the Home sliders has changed
@@ -133,12 +143,12 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     const data = ev.currentTarget.modelValue;
     // Destroy old charts
     this.polarChart.destroy();
-    this.lineChart.destroy();
+    this.areaChart.destroy();
     // Redraw charts with updated inputs
     // TODO: Replace parameters with data from sliders
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
 
-    this.lineChart = createLineChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
+    this.areaChart = createAreaChart(this.ctxAreaChart, this._getAreaDataSet(), this.goalCO2, this.b20SliderValue);
   }
 
   // Update charts when one of the Office sliders has changed
@@ -148,12 +158,12 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     const data = ev.currentTarget.modelValue;
     // Destroy old charts
     this.polarChart.destroy();
-    this.lineChart.destroy();
+    this.areaChart.destroy();
     // Redraw charts with updated inputs
     // TODO: Replace parameters with data from sliders
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
 
-    this.lineChart = createLineChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
+    this.areaChart = createAreaChart(this.ctxAreaChart, this._getAreaDataSet(), this.goalCO2, this.b20SliderValue);
   }
 
   // Update charts when one of the Travel sliders has changed
@@ -163,11 +173,20 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     const data = ev.currentTarget.modelValue;
     // Destroy old charts
     this.polarChart.destroy();
-    this.lineChart.destroy();
+    this.areaChart.destroy();
     // Redraw charts with updated inputs
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
 
-    this.lineChart = createLineChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
+    this.areaChart = createAreaChart(this.ctxAreaChart, this._getAreaDataSet(), this.goalCO2, this.b20SliderValue);
+  }
+
+  _getAreaDataSet() {
+    // TODO: input should be taken from sliders
+    return [
+      calcHomeUsage(),
+      calcTravelUsage(),
+      calcOfficeUsage()
+    ]
   }
 
   _getPolarDataSet() {
@@ -197,7 +216,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
             <ing-card class="ing_card">
               <div slot="heading" class="card-title">Back-to-office Impact Overview</div>
               <div slot="content">
-                <canvas id="line-chart" width="400" height="100"></canvas>
+                <canvas id="area-chart" width="400" height="100"></canvas>
               </div>
             </ing-card>
             <ing-card class="ing_card">
@@ -221,7 +240,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                     min="0"
                     max="100"
                     step="1"
-                    .modelValue="${30}"
+                    .modelValue="${this.b20SliderValue}"
                     @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                     unit="%"
                     label="Back to Office"
