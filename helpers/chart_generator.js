@@ -7,8 +7,7 @@ Chart.register(...registerables);
 const COLOR_HOME = 'rgb(255, 208, 152)';
 const COLOR_OFFICE = 'rgb(255, 178, 136)';
 const COLOR_TRAVEL = 'rgb(255, 168, 168)';
-const RED = 'rgb(255, 0, 0)';
-const BLUE = 'rgb(0, 0, 255)';
+const WHITE = 'rgb(255, 255, 255)';
 
 export function createPolarChart (ctx, maxVal, dataSet) {
   return new Chart(ctx, {
@@ -105,7 +104,10 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
           data: Array(100).fill(goal),
           yAxisID: "ygoal",
           fill: false,
-          borderColor: RED,
+          borderColor: orange,
+          borderWidth: 2,
+          borderDash: [2],
+          borderJoinStyle: 'round',
           tension: 0
         },
         {
@@ -116,7 +118,9 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
           yAxisID: "yb2o",
           fill: false,
           indexAxis: 'y',
-          borderColor: BLUE,
+          borderColor: WHITE,
+          borderWidth: 2,
+          borderDash: [2],
           tension: 0
         },
         {
