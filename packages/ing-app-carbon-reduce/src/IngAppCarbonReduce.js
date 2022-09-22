@@ -124,11 +124,13 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     this.ctxPolarChartBaseline = createPolarChartBaseline(this.ctxPolarChartBaseline, this.polarChartMaxVal, this.polarChartBaselineDataset);
     this.areaChart = createAreaChart(this.ctxAreaChart, this.areaChartBaseline, this.goalCO2, this.b20SliderValue);
     this.doughnutChart = createDoughnutChart(this.ctxDoughnutChart, this.achievedCO2, this.goalCO2);
-    // Sliders' position is set as fixed causing the element taken out of flow of DOM and flexbox
-    // This is a workaround to configure its width in flex-box way
+    // Below elements'position config caused themselves taken out of flow of DOM and flexbox
+    // This is a workaround to configure their width in flex-box way
     setTimeout(function(){
-      let elm = this.shadowRoot.querySelector(".slider-card");
-      elm.style.width = window.getComputedStyle(elm.parentElement).width;
+      let elmSlider = this.shadowRoot.querySelector(".slider-card");
+      elmSlider.style.width = window.getComputedStyle(elmSlider.parentElement).width;
+      let elmBackground = this.shadowRoot.querySelector("#polar-background");
+      elmBackground.style.width = window.getComputedStyle(elmBackground.parentElement).width;
     }.bind(this), 80);
   }
 
@@ -223,6 +225,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       <ing-example-nav-bar></ing-example-nav-bar>
       <div class="page-container flexbox">
         <div class="column1">
+          <img id="polar-background" src="../../assets/polarBackground.png" alt="Background">
           <div>
             <div class="polar-chart">
               <canvas id="polar-chart-baseline" width="300" height="300"></canvas>
@@ -239,7 +242,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
             <div class="flexbox achievement__container">
               <ing-card style="flex: 1;">
                 <div slot="content" class="achievement__flexbox">
-                  <img width="80" src="../../assets/sustainable.png" alt="Image" style="flex: 1;">
+                  <img width="80" src="../../assets/sustainable.png" alt="Illustration" style="flex: 1;">
                   <p style="flex: 2;"> ING will achieve
                     ${this.baselineTotalCO2 >= this.achievedCO2 ? html`
                       <span class="card-highlight">${this.baselineTotalCO2 - this.achievedCO2}</span> ton CO2<br>less than the baseline
@@ -472,6 +475,13 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       .polar-chart {
         width: 67%;
         margin: auto;
+      }
+
+      #polar-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: none;
       }
 
       #polar-chart-baseline {
