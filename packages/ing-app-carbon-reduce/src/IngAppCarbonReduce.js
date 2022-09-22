@@ -15,7 +15,8 @@ import {
   spacer64,
   IngAccordion,
   IngIcon,
-  registerDefaultIconsets
+  registerDefaultIconsets,
+  IngButton
 } from 'ing-web';
 
 import { IngHeader } from '../../ing-example-nav-bar/src/IngHeader.js';
@@ -52,6 +53,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       'ing-tabs': IngTabs,
       'ing-tab': IngTabCustom,
       'ing-icon': IngIcon,
+      'ing-button': IngButton,
       'ing-tab-panel': IngTabPanelCustom,
       'ing-form': IngForm,
       'ing-accordion': IngAccordion,
@@ -70,7 +72,8 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       areaChartBaseline: { type: Array },
       polarChart: { type: Object },
       polarChartDataMax: { type: Number },
-      polarChartBaselineDataset: { type: Object },
+      polarChartBaselineDataset: { type: Array },
+      polarChartDataset: { type: Array },
       b20SliderValue: { type: Number },
       daysPerWeekSliderValue: { type: Number },
       goalCO2: { type: Number },
@@ -243,8 +246,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                     .modelValue="${this.b20SliderValue}"
                     @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                     unit="%"
-                    label="Back to Office"
-                    help-text="Percentage of employees going back to office"
+                    label="Employees Back to Office"
                   ></ing-input-range>
                   <ing-input-range
                     id="daysPerWeek"
@@ -254,9 +256,18 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                     step="1"
                     .modelValue="${2}"
                     @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                    label="# Days per Week"
+                    label="# Days per Week in Office"
                     unit="Days"
-                    help-text="Number of days per week in the office"
+                  ></ing-input-range>
+                  <ing-input-range
+                    id="buildingsOpen"
+                    name="buildingsOpen"
+                    min="0"
+                    max="20"
+                    step="1"
+                    .modelValue="${10}"
+                    @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                    label="Buildings Open"
                   ></ing-input-range>
                 </form>
               </ing-form>
@@ -379,6 +390,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                   </ing-form>
                 </ing-accordion-content>
               </ing-accordion>
+              <ing-button class="button__baseline">Set New Baseline</ing-button>
             </div>
           </ing-card>
         </div>
@@ -401,6 +413,12 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
         margin: ${spacer12}  ${spacer24};
         display: flex;
         gap: ${spacer12}
+      }
+
+      .button__baseline {
+        background-color: black;
+        border-color: white;
+        margin: 12px;
       }
 
       .ing_card {
