@@ -6,6 +6,8 @@ Chart.register(...registerables);
 const COLOR_HOME = 'rgb(255, 208, 152)';
 const COLOR_OFFICE = 'rgb(255, 178, 136)';
 const COLOR_TRAVEL = 'rgb(255, 168, 168)';
+const RED = 'rgb(255, 0, 0)';
+const BLUE = 'rgb(0, 0, 255)';
 
 export function createPolarChart (ctx, maxVal, dataSet) {
   return new Chart(ctx, {
@@ -91,51 +93,109 @@ export function createPolarChartBaseline (ctx, maxVal, dataSet) {
   });
 }
 
-export function createLineChart (ctx, dataSets) {
+export function createAreaChart (ctx, dataSets, goal, b20) {
   return new Chart(ctx, {
-    type: 'line',
     data: {
-      labels: Array.from(Array(7).keys()),
+      labels: Array.from(Array(100).keys()),
       datasets: [
         {
+          type: 'line',
+          label: 'CO2 Goal',
+          data: Array(100).fill(goal),
+          yAxisID: "ygoal",
+          fill: false,
+          borderColor: RED,
+          tension: 0
+        },
+        {
+          type: 'line',
+          label: 'B2O %',
+          axis: 'y',
+          data: Array(300).fill(b20),
+          yAxisID: "yb2o",
+          fill: false,
+          indexAxis: 'y',
+          borderColor: BLUE,
+          tension: 0
+        },
+        {
+          type: 'line',
           label: 'Travel Consumption',
           data: dataSets[1],
+          yAxisID: "ystack",
           fill: {
             target: 'stack',
-            above: helpers.color(COLOR_TRAVEL).alpha(0.35).rgbString(),   // Area will be red above the origin
-            below: 'rgba(0, 0, 255, 0)'    // And blue below the origin
+            above: helpers.color(COLOR_TRAVEL).alpha(0.35).rgbString(),
+            below: helpers.color(COLOR_TRAVEL).alpha(0.35).rgbString(),
           },
           borderColor: COLOR_TRAVEL,
-          tension: 0
+          tension: 0.3
         },
         {
+          type: 'line',
           label: 'Home Consumption',
           data: dataSets[0],
-          fill: {
-            target: 'origin',
-            above: helpers.color(COLOR_HOME).alpha(0.35).rgbString(),   // Area will be red above the origin
-            below: 'rgba(0, 0, 255, 0)'    // And blue below the origin
-          },
-          borderColor: COLOR_HOME,
-          tension: 0
-        },
-        {
-          label: 'Office Consumption',
-          data: dataSets[2],
+          yAxisID: "ystack",
           fill: {
             target: 'stack',
-            above: helpers.color(COLOR_OFFICE).alpha(0.35).rgbString(),   // Area will be red above the origin
-            below: 'rgba(0, 0, 255, 0)'    // And blue below the origin
+            above: helpers.color(COLOR_HOME).alpha(0.35).rgbString(),
+            below: helpers.color(COLOR_HOME).alpha(0.35).rgbString()
+          },
+          borderColor: COLOR_HOME,
+          tension: 0.3
+        },
+        {
+          type: 'line',
+          label: 'Office Consumption',
+          data: dataSets[2],
+          yAxisID: "ystack",
+          fill: {
+            target: 'stack',
+            above: helpers.color(COLOR_OFFICE).alpha(0.35).rgbString(),
+            below: helpers.color(COLOR_OFFICE).alpha(0.35).rgbString(),
           },
           borderColor: COLOR_OFFICE,
-          tension: 0
+          tension: 0.3
         }
       ]
     },
     options: {
+      elements: {
+        point:{
+          radius: 0
+        }
+      },
       scales: {
-        y: {
-          stacked: true
+        x: {
+          type: "linear",
+          stacked: true,
+          display: true,
+          min: 0,
+          beginAtZero: true
+        },
+        ystack: {
+          type: "linear",
+          stacked: true,
+          display: true,
+          position: "left",
+          min: 0,
+          suggestedMax: 300
+        },
+        ygoal: {
+          type: "linear",
+          display: false,
+          stacked: false,
+          min: 0,
+          suggestedMax: 300
+        },
+        yb2o: {
+          type: "linear",
+          display: false,
+          stacked: false,
+          beginAtZero: true,
+          min: 0,
+          suggestedMin: 0,
+          suggestedMax: 100
         }
       }
     }
