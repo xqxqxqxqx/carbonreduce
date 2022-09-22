@@ -1,5 +1,6 @@
 import {Chart, registerables} from 'chart.js';
 import * as helpers from 'chart.js/helpers';
+import {orange} from 'ing-web';
 
 Chart.register(...registerables);
 
@@ -198,6 +199,25 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
           suggestedMax: 100
         }
       }
+    }
+  });
+}
+
+export function createDoughnutChart (ctx, achieved, goal) {
+  return new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data: [achieved, achieved <= goal ? goal - achieved : 0],
+        backgroundColor: [
+          orange,
+          'rgba(255, 255, 255, 0.1)'
+        ]
+      }]
+    },
+    options: {
+      borderWidth: 0,
+      cutout: '80%'
     }
   });
 }

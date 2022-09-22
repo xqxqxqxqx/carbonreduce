@@ -17,7 +17,11 @@ import {
   IngAccordion,
   IngIcon,
   registerDefaultIconsets,
-  IngButton
+  IngButton,
+  font16Mixin,
+  font24BoldMixin,
+  orange,
+  spacer32
 } from 'ing-web';
 
 import { IngHeader } from '../../ing-example-nav-bar/src/IngHeader.js';
@@ -31,6 +35,7 @@ import {
   createPolarChart,
   createPolarChartBaseline,
   createAreaChart,
+  createDoughnutChart
 } from '../../../helpers/chart_generator.js';
 
 import {
@@ -78,6 +83,10 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       b20SliderValue: { type: Number },
       daysPerWeekSliderValue: { type: Number },
       goalCO2: { type: Number },
+      achievedCO2: { type: Number },
+      baselineTotalCO2: { type: Number },
+      doughnutChart: { type: Object },
+      ctxDoughnutChart: { type: Object },
     };
   }
 
@@ -87,6 +96,8 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
 
     this.b20SliderValue = 40;
     this.goalCO2 = 150;
+    this.achievedCO2 = 67;
+    this.baselineTotalCO2 = 300;
 
     this.title = 'Carbon Configurator';
     this.polarChartBaselineDataset = [300, 100, 200, 450, 600, 850];
@@ -106,17 +117,19 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     this.ctxAreaChart = this.renderRoot.querySelector( '#area-chart' ).getContext('2d');
     this.ctxPolarChart = this.renderRoot.querySelector( '#polar-chart' ).getContext('2d');
     this.ctxPolarChartBaseline = this.renderRoot.querySelector( '#polar-chart-baseline' ).getContext('2d');
+    this.ctxDoughnutChart = this.renderRoot.querySelector( '#doughnut-chart' ).getContext('2d');
 
     // Initialise all charts with default baseline
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
     this.ctxPolarChartBaseline = createPolarChartBaseline(this.ctxPolarChartBaseline, this.polarChartMaxVal, this.polarChartBaselineDataset);
     this.areaChart = createAreaChart(this.ctxAreaChart, this.areaChartBaseline, this.goalCO2, this.b20SliderValue);
+    this.doughnutChart = createDoughnutChart(this.ctxDoughnutChart, this.achievedCO2, this.goalCO2);
     // Sliders' position is set as fixed causing the element taken out of flow of DOM and flexbox
     // This is a workaround to configure its width in flex-box way
     setTimeout(function(){
       let elm = this.shadowRoot.querySelector(".slider-card");
       elm.style.width = window.getComputedStyle(elm.parentElement).width;
-    }.bind(this), 0);
+    }.bind(this), 80);
   }
 
   // Submit form programmatically when slider changes so that we can read values from form object modelValue
@@ -208,7 +221,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
   render() {
     return html`
       <ing-example-nav-bar></ing-example-nav-bar>
-      <div class="page-container">
+      <div class="page-container flexbox">
         <div class="column1">
           <div>
             <div class="polar-chart">
@@ -223,12 +236,27 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                 <canvas id="area-chart" width="400" height="100"></canvas>
               </div>
             </ing-card>
-            <div class="summary-container">
+            <div class="flexbox achievement__container">
               <ing-card style="flex: 1;">
-                <p slot="content"> Do you know that </p>
+                <div slot="content" class="achievement__flexbox">
+                  <img width="80" src="../../assets/sustainable.png" alt="Image" style="flex: 1;">
+                  <p style="flex: 2;"> ING will achieve
+                    ${this.baselineTotalCO2 >= this.achievedCO2 ? html`
+                      <span class="card-highlight">${this.baselineTotalCO2 - this.achievedCO2}</span> ton CO2<br>less than the baseline
+                    ` : html`
+                      <span class="card-highlight">${this.achievedCO2 - this.baselineTotalCO2 }</span> ton CO2<br>more than the baseline
+                    `}
+                  </p>
+                </div>
               </ing-card>
               <ing-card style="flex: 1;">
-                <p slot="content"> Let's win this! </p>
+                <div slot="content" class="achievement__flexbox">
+                  <div style="flex: 1;">
+                    <div class="doughnut-label">${this.achievedCO2} / ${this.goalCO2}</div>
+                    <canvas id="doughnut-chart" width="90" height="80"></canvas>
+                  </div>
+                  <p style="flex: 2;">ING will achieve<span class="card-highlight">${Math.round(this.achievedCO2/this.goalCO2 * 100)}%</span><br>of the CO2 emission target</p>
+                </div>
               </ing-card>
             </div>
           </div>
@@ -412,9 +440,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
         top: ${spacer64};
         text-align: center;
         margin: ${spacer8}  ${spacer24};
-        display: flex;
-        gap: ${spacer12}
-      }
+      }page-container
 
       .button__baseline {
         background-color: black;
@@ -451,9 +477,28 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
         pointer-events: none;
       }
 
+      #doughnut-chart {
+        pointer-events: none;
+      }
+
+      .doughnut-label {
+        ${font16Mixin()};
+        color: ${orange};
+        position: absolute;
+        top: 47%;
+        text-align: center;
+        width: 27%;
+      }
+
       .card-title {
         ${font19Mixin()};
         color: ${white};
+      }
+
+      .card-highlight {
+        ${font24BoldMixin()};
+        color: ${orange};
+        margin: ${spacer8};
       }
 
       .slider-card {
@@ -467,11 +512,23 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
         padding-right: 24px;
       }
 
-      .summary-container {
+      .flexbox {
         display: flex;
         gap: ${spacer12};
+        justify-content: center;
+      }
+
+      .achievement__container {
         position: relative;
         top: -6px;
+      }
+
+      .achievement__flexbox {
+        display: flex;
+        gap: ${spacer32};
+        justify-content: center;
+        align-items: center;
+        margin: ${spacer8} ${spacer24};
       }
 
       /* Start of Custom scrollbar */
