@@ -84,6 +84,13 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
     this.ctxPolarChartBaseline = createPolarChartBaseline(this.ctxPolarChartBaseline, this.polarChartMaxVal, this.polarChartBaselineDataset);
     this.lineChart = createLineChart(this.ctxLineChart, this.lineChartBaseline);
+
+    // Sliders' position is set as fixed causing the element taken out of flow of DOM and flexbox
+    // This is a workaround to configure its width in flex-box way
+    setTimeout(function(){
+      let elm = this.shadowRoot.querySelector(".slider-card");
+      elm.style.width = window.getComputedStyle(elm.parentElement).width;
+    }.bind(this), 0);
   }
 
   // Submit form programmatically when slider changes so that we can read values from form object modelValue
@@ -399,7 +406,6 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       .slider-card {
         position: fixed;
         right: ${spacer24};
-        width: 64vh;
       }
 
       .slider-content {
