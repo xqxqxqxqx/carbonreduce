@@ -12,7 +12,8 @@ import {
   spacer24,
   white,
   font19Mixin,
-  spacer64
+  spacer64,
+  spacer8,
 } from 'ing-web';
 
 import { IngHeader } from '../../ing-example-nav-bar/src/IngHeader.js';
@@ -47,7 +48,6 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
 
   static get properties() {
     return {
-      title: { type: String },
       lineChart: { type: Object },
       ctxPolarChart: { type: Object },
       ctxPolarChartBaseline: { type: Object },
@@ -61,7 +61,6 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
 
   constructor() {
     super();
-    this.title = 'Carbon Configurator';
     this.polarChartBaselineDataset = [300, 100, 200, 450, 600, 850];
     
     this.polarChartMaxVal = Math.max(
@@ -181,24 +180,24 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
             </div>
           </div>
           <div>
-            <ing-card class="ing_card">
+            <ing-card>
               <div slot="heading" class="card-title">Back-to-office Impact Overview</div>
               <div slot="content">
                 <canvas id="line-chart" width="400" height="100"></canvas>
               </div>
             </ing-card>
-            <ing-card class="ing_card">
-              <h2 slot="heading">${this.title}</h2>
-              <p slot="content"> Let's win this! </p>
-            </ing-card>
-            <ing-card class="ing_card">
-              <h2 slot="heading">${this.title}</h2>
-              <p slot="content"> Let's win this! </p>
-            </ing-card>
+            <div class="summary-container">
+              <ing-card style="flex: 1;">
+                <p slot="content"> Do you know that </p>
+              </ing-card>
+              <ing-card style="flex: 1;">
+                <p slot="content"> Let's win this! </p>
+              </ing-card>
+            </div>
           </div>
         </div>
         <div class="column2">
-          <ing-card class="ing_card slider-card">
+          <ing-card class="slider-card">
             <div slot="content" class="slider-content">
               <ing-form  @submit="${ev => this._handleGeneralValueChange(ev)}"">
                 <form>
@@ -360,13 +359,9 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
         position: relative;
         top: ${spacer64};
         text-align: center;
-        margin: ${spacer12}  ${spacer24};
+        margin: ${spacer8}  ${spacer24};
         display: flex;
         gap: ${spacer12}
-      }
-
-      .ing_card {
-        background-color: ${black80};
       }
 
       .column1 {
@@ -412,6 +407,13 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
         height: calc(100vh - 142px);
         overflow-y: auto;
         padding-right: 24px;
+      }
+
+      .summary-container {
+        display: flex;
+        gap: ${spacer12};
+        position: relative;
+        top: -6px;
       }
 
       /* Start of Custom scrollbar */
