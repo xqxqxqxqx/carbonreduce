@@ -12,7 +12,11 @@ import {
   spacer24,
   white,
   font19Mixin,
-  spacer64
+  spacer64,
+  IngAccordion,
+  IngIcon,
+  registerDefaultIconsets,
+  IngButton
 } from 'ing-web';
 
 import { IngHeader } from '../../ing-example-nav-bar/src/IngHeader.js';
@@ -20,9 +24,14 @@ import { IngCardCustom } from "../../ing-card-custom/src/IngCardCustom";
 import { IngSliderCustom } from "../../ing-slider-custom/src/IngSliderCustom";
 import { IngTabPanelCustom } from "../../ing-tab-panel-custom/src/IngTabPanelCustom";
 import { IngTabCustom } from "../../ing-tab-custom/src/IngTabCustom";
-import { createPolarChart, createPolarChartBaseline, createLineChart } from '../../../helpers/chart_generator.js';
+import { IngAccordionContentCustom } from "../../ing-accordion-content-custom/src/IngAccordionContentCustom";
+import { IngAccordionInvokerButtonCustom } from "../../ing-accordion-invoker-button-custom/src/IngAccordionInvokerButtonCustom";
+import {
+  createPolarChart,
+  createPolarChartBaseline,
+  createAreaChart,
+} from '../../../helpers/chart_generator.js';
 
-import { Chart, registerables } from 'chart.js';
 import {
   calcCarUsage,
   calcHomeElectricityUsage,
@@ -30,7 +39,10 @@ import {
   calcHomeUsage, calcOfficeElectricityUsage,
   calcOfficeHeatingUsage, calcOfficeUsage, calcPublicTransportUsage, calcTravelUsage
 } from "../../../helpers/formulas";
+
 Chart.register(...registerables);
+import { Chart, registerables } from 'chart.js';
+
 
 export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
   static get scopedElements() {
@@ -40,51 +52,64 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       'ing-input-range': IngSliderCustom,
       'ing-tabs': IngTabs,
       'ing-tab': IngTabCustom,
+      'ing-icon': IngIcon,
+      'ing-button': IngButton,
       'ing-tab-panel': IngTabPanelCustom,
       'ing-form': IngForm,
+      'ing-accordion': IngAccordion,
+      'ing-accordion-content': IngAccordionContentCustom,
+      'ing-accordion-invoker-button': IngAccordionInvokerButtonCustom,
     };
   }
 
   static get properties() {
     return {
       title: { type: String },
-      lineChart: { type: Object },
+      areaChart: { type: Object },
       ctxPolarChart: { type: Object },
       ctxPolarChartBaseline: { type: Object },
-      ctxLineChart: { type: Object },
-      lineChartBaseline: { type: Array },
+      ctxAreaChart: { type: Object },
+      areaChartBaseline: { type: Array },
       polarChart: { type: Object },
       polarChartDataMax: { type: Number },
-      polarChartBaselineDataset: { type: Object }
+      polarChartBaselineDataset: { type: Array },
+      polarChartDataset: { type: Array },
+      b20SliderValue: { type: Number },
+      daysPerWeekSliderValue: { type: Number },
+      goalCO2: { type: Number },
     };
   }
 
   constructor() {
     super();
+    registerDefaultIconsets();
+
+    this.b20SliderValue = 40;
+    this.goalCO2 = 150;
+
     this.title = 'Carbon Configurator';
     this.polarChartBaselineDataset = [300, 100, 200, 450, 600, 850];
-    
+
     this.polarChartMaxVal = Math.max(
       ...this._getPolarDataSet(),
       ...this.polarChartBaselineDataset
     );
 
-    this.lineChartBaseline = [Array.from({length: 100}, () => Math.floor(Math.random() * 100)),
-      Array.from({length: 100}, () => Math.floor(Math.random() * 100)),
-      Array.from({length: 100}, () => Math.floor(Math.random() * 100))];
+    this.areaChartBaseline = [Array.from({length: 101}, () => Math.floor(Math.random() * 100)),
+      Array.from({length: 101}, () => Math.floor(Math.random() * 100)),
+      Array.from({length: 101}, () => Math.floor(Math.random() * 100))];
   }
 
   firstUpdated() {
     // Grab the canvases where the charts will be injected
-    this.ctxLineChart = this.renderRoot.querySelector( '#line-chart' ).getContext('2d');
+    this.ctxAreaChart = this.renderRoot.querySelector( '#area-chart' ).getContext('2d');
     this.ctxPolarChart = this.renderRoot.querySelector( '#polar-chart' ).getContext('2d');
     this.ctxPolarChartBaseline = this.renderRoot.querySelector( '#polar-chart-baseline' ).getContext('2d');
 
     // Initialise all charts with default baseline
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
     this.ctxPolarChartBaseline = createPolarChartBaseline(this.ctxPolarChartBaseline, this.polarChartMaxVal, this.polarChartBaselineDataset);
-    this.lineChart = createLineChart(this.ctxLineChart, this.lineChartBaseline);
-
+    this.areaChart = createAreaChart(this.ctxAreaChart, this.areaChartBaseline, this.goalCO2, this.b20SliderValue);
     // Sliders' position is set as fixed causing the element taken out of flow of DOM and flexbox
     // This is a workaround to configure its width in flex-box way
     setTimeout(function(){
@@ -103,14 +128,15 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
   _handleGeneralValueChange(ev) {
     // Get data from form
     const data = ev.currentTarget.modelValue;
+    this.b20SliderValue = data['backToOffice'];
     // Destroy old charts
     this.polarChart.destroy();
-    this.lineChart.destroy();
+    this.areaChart.destroy();
     // Redraw charts with updated inputs
     // TODO: Replace parameters with data from sliders
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
 
-    this.lineChart = createLineChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
+    this.areaChart = createAreaChart(this.ctxAreaChart, this._getAreaDataSet(), this.goalCO2, this.b20SliderValue);
   }
 
   // Update charts when one of the Home sliders has changed
@@ -120,12 +146,12 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     const data = ev.currentTarget.modelValue;
     // Destroy old charts
     this.polarChart.destroy();
-    this.lineChart.destroy();
+    this.areaChart.destroy();
     // Redraw charts with updated inputs
     // TODO: Replace parameters with data from sliders
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
 
-    this.lineChart = createLineChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
+    this.areaChart = createAreaChart(this.ctxAreaChart, this._getAreaDataSet(), this.goalCO2, this.b20SliderValue);
   }
 
   // Update charts when one of the Office sliders has changed
@@ -135,12 +161,12 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     const data = ev.currentTarget.modelValue;
     // Destroy old charts
     this.polarChart.destroy();
-    this.lineChart.destroy();
+    this.areaChart.destroy();
     // Redraw charts with updated inputs
     // TODO: Replace parameters with data from sliders
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
 
-    this.lineChart = createLineChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
+    this.areaChart = createAreaChart(this.ctxAreaChart, this._getAreaDataSet(), this.goalCO2, this.b20SliderValue);
   }
 
   // Update charts when one of the Travel sliders has changed
@@ -150,11 +176,20 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     const data = ev.currentTarget.modelValue;
     // Destroy old charts
     this.polarChart.destroy();
-    this.lineChart.destroy();
+    this.areaChart.destroy();
     // Redraw charts with updated inputs
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
 
-    this.lineChart = createLineChart(this.ctxLineChart, [calcHomeUsage(), calcTravelUsage(), calcOfficeUsage()]);
+    this.areaChart = createAreaChart(this.ctxAreaChart, this._getAreaDataSet(), this.goalCO2, this.b20SliderValue);
+  }
+
+  _getAreaDataSet() {
+    // TODO: input should be taken from sliders
+    return [
+      calcHomeUsage(),
+      calcTravelUsage(),
+      calcOfficeUsage()
+    ]
   }
 
   _getPolarDataSet() {
@@ -184,7 +219,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
             <ing-card class="ing_card">
               <div slot="heading" class="card-title">Back-to-office Impact Overview</div>
               <div slot="content">
-                <canvas id="line-chart" width="400" height="100"></canvas>
+                <canvas id="area-chart" width="400" height="100"></canvas>
               </div>
             </ing-card>
             <ing-card class="ing_card">
@@ -208,11 +243,10 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                     min="0"
                     max="100"
                     step="1"
-                    .modelValue="${30}"
+                    .modelValue="${this.b20SliderValue}"
                     @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                     unit="%"
-                    label="Back to Office"
-                    help-text="Percentage of employees going back to office"
+                    label="Employees Back to Office"
                   ></ing-input-range>
                   <ing-input-range
                     id="daysPerWeek"
@@ -222,15 +256,26 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                     step="1"
                     .modelValue="${2}"
                     @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                    label="# Days per Week"
+                    label="# Days per Week in Office"
                     unit="Days"
-                    help-text="Number of days per week in the office"
+                  ></ing-input-range>
+                  <ing-input-range
+                    id="buildingsOpen"
+                    name="buildingsOpen"
+                    min="0"
+                    max="20"
+                    step="1"
+                    .modelValue="${10}"
+                    @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                    label="Buildings Open"
                   ></ing-input-range>
                 </form>
               </ing-form>
-              <ing-tabs .selectedIndex=${0}>
-                <ing-tab slot="tab">Home</ing-tab>
-                <ing-tab-panel slot="panel">
+              <ing-accordion>
+                <h3 slot="invoker">
+                  <ing-accordion-invoker-button>Home</ing-accordion-invoker-button>
+                </h3>
+                <ing-accordion-content slot="content">
                   <ing-form @submit="${ev => this._handleHomeValueChange(ev)}">
                     <form>
                       <ing-input-range
@@ -241,7 +286,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         .modelValue="${100}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="Floor Size"
-                        help-text="Square meters"
+                        unit="square meters"
                       ></ing-input-range>
                       <ing-input-range
                         name="insulation"
@@ -251,7 +296,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         .modelValue="${10}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="House Insulation"
-                        help-text="R-value"
+                        unit="R-value"
                       ></ing-input-range>
                       <ing-input-range
                         name="insideTemp"
@@ -261,7 +306,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         .modelValue="${20}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="Home Inside Temperature"
-                        help-text="Degrees Celsius"
+                        unit="Degrees Celsius"
                       ></ing-input-range>
                       <ing-input-range
                         name="renewableEnergy"
@@ -271,13 +316,15 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         .modelValue="${20000}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="Renewable Energy Generation Capacity"
-                        help-text="kWh"
+                        unit="kWh"
                       ></ing-input-range>
                     </form>
                   </ing-form>
-                </ing-tab-panel>
-                <ing-tab slot="tab">Office</ing-tab>
-                <ing-tab-panel slot="panel">
+                </ing-accordion-content>
+                <h3 slot="invoker">
+                  <ing-accordion-invoker-button>Office</ing-accordion-invoker-button>
+                </h3>
+                <ing-accordion-content slot="content">
                   <ing-form @submit="${ev => this._handleOfficeValueChange(ev)}">
                     <form>
                       <ing-input-range
@@ -288,7 +335,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         .modelValue="${10000}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="Floor Size"
-                        help-text="Square meters"
+                        unit="square meters"
                       ></ing-input-range>
                       <ing-input-range
                         name="insulation"
@@ -298,7 +345,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         .modelValue="${10}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="Building Insulation"
-                        help-text="R-value"
+                        unit="R-value"
                       ></ing-input-range>
                       <ing-input-range
                         name="insideTemp"
@@ -308,7 +355,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         .modelValue="${20}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="Building Inside Temperature"
-                        help-text="Degrees Celsius"
+                        unit="Degrees Celsius"
                       ></ing-input-range>
                       <ing-input-range
                         name="renewableEnergy"
@@ -318,13 +365,15 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         .modelValue="${20000}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="Renewable Energy Generation Capacity"
-                        help-text="kWh"
+                        unit="kWh"
                       ></ing-input-range>
                     </form>
                   </ing-form>
-                </ing-tab-panel>
-                <ing-tab slot="tab">Travel</ing-tab>
-                <ing-tab-panel slot="panel">
+                </ing-accordion-content>
+                <h3 slot="invoker">
+                  <ing-accordion-invoker-button>Travel</ing-accordion-invoker-button>
+                </h3>
+                <ing-accordion-content slot="content">
                   <ing-form @submit="${ev => this._handleTravelValueChange(ev)}">
                     <form>
                       <ing-input-range
@@ -335,12 +384,13 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         .modelValue="${30}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="Car"
-                        help-text="kilometers/week"
+                        unit="km/week"
                       ></ing-input-range>
                     </form>
                   </ing-form>
-                </ing-tab-panel>
-              </ing-tabs>
+                </ing-accordion-content>
+              </ing-accordion>
+              <ing-button class="button__baseline">Set New Baseline</ing-button>
             </div>
           </ing-card>
         </div>
@@ -363,6 +413,12 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
         margin: ${spacer12}  ${spacer24};
         display: flex;
         gap: ${spacer12}
+      }
+
+      .button__baseline {
+        background-color: black;
+        border-color: white;
+        margin: 12px;
       }
 
       .ing_card {
@@ -419,13 +475,13 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
         width: 10px;
       }
       ::-webkit-scrollbar-track {
-        background: #f1f1f1; 
+        background: #f1f1f1;
       }
       ::-webkit-scrollbar-thumb {
-        background: #888; 
+        background: #888;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #555; 
+        background: #555;
       }
       /* End of Custom scrollbar */
     `;
