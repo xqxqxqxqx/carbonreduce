@@ -4,9 +4,9 @@ import {orange} from 'ing-web';
 
 Chart.register(...registerables);
 
-const COLOR_HOME = 'rgb(255, 208, 152)';
-const COLOR_OFFICE = 'rgb(255, 178, 136)';
-const COLOR_TRAVEL = 'rgb(255, 168, 168)';
+const COLOR_HOME = 'rgb(255, 166, 161)';
+const COLOR_OFFICE = 'rgb(255, 149, 112)';
+const COLOR_TRAVEL = 'rgb(249, 212, 192)';
 const WHITE = 'rgb(255, 255, 255)';
 
 export function createPolarChart (ctx, maxVal, dataSet) {
@@ -14,12 +14,12 @@ export function createPolarChart (ctx, maxVal, dataSet) {
     type: 'polarArea',
     data: {
       labels: [
-        'Office heating',
+        'Office gas',
         'Office electricity',
         'Car travel',
         'Non-car travel',
         'Home electricity',
-        'Home heating'
+        'Home gas'
       ],
       datasets: [{
         data: dataSet,
