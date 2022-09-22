@@ -263,162 +263,164 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
         </div>
         <div class="column2">
           <ing-card class="slider-card">
-            <div slot="content" class="slider-content">
-              <ing-form  @submit="${ev => this._handleGeneralValueChange(ev)}"">
-                <form>
-                  <ing-input-range
-                    id="backToOffice"
-                    name="backToOffice"
-                    min="0"
-                    max="100"
-                    step="1"
-                    .modelValue="${this.b20SliderValue}"
-                    @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                    unit="%"
-                    label="Employees Back to Office"
-                  ></ing-input-range>
-                  <ing-input-range
-                    id="daysPerWeek"
-                    name="daysPerWeek"
-                    min="0"
-                    max="5"
-                    step="1"
-                    .modelValue="${2}"
-                    @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                    label="# Days per Week in Office"
-                    unit="Days"
-                  ></ing-input-range>
-                  <ing-input-range
-                    id="buildingsOpen"
-                    name="buildingsOpen"
-                    min="0"
-                    max="20"
-                    step="1"
-                    .modelValue="${10}"
-                    @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                    label="Buildings Open"
-                  ></ing-input-range>
-                </form>
-              </ing-form>
-              <ing-accordion>
-                <h3 slot="invoker">
-                  <ing-accordion-invoker-button>Home</ing-accordion-invoker-button>
-                </h3>
-                <ing-accordion-content slot="content">
-                  <ing-form @submit="${ev => this._handleHomeValueChange(ev)}">
-                    <form>
-                      <ing-input-range
-                        name="floorSize"
-                        min="0"
-                        max="500"
-                        step="10"
-                        .modelValue="${100}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Floor Size"
-                        unit="square meters"
-                      ></ing-input-range>
-                      <ing-input-range
-                        name="insulation"
-                        min="0"
-                        max="100"
-                        step="1"
-                        .modelValue="${10}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="House Insulation"
-                        unit="R-value"
-                      ></ing-input-range>
-                      <ing-input-range
-                        name="insideTemp"
-                        min="0"
-                        max="30"
-                        step="1"
-                        .modelValue="${20}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Home Inside Temperature"
-                        unit="Degrees Celsius"
-                      ></ing-input-range>
-                      <ing-input-range
-                        name="renewableEnergy"
-                        min="0"
-                        max="50000"
-                        step="100"
-                        .modelValue="${20000}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Renewable Energy Generation Capacity"
-                        unit="kWh"
-                      ></ing-input-range>
-                    </form>
-                  </ing-form>
-                </ing-accordion-content>
-                <h3 slot="invoker">
-                  <ing-accordion-invoker-button>Office</ing-accordion-invoker-button>
-                </h3>
-                <ing-accordion-content slot="content">
-                  <ing-form @submit="${ev => this._handleOfficeValueChange(ev)}">
-                    <form>
-                      <ing-input-range
-                        name="floorSize"
-                        min="0"
-                        max="50000"
-                        step="500"
-                        .modelValue="${10000}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Floor Size"
-                        unit="square meters"
-                      ></ing-input-range>
-                      <ing-input-range
-                        name="insulation"
-                        min="0"
-                        max="100"
-                        step="1"
-                        .modelValue="${10}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Building Insulation"
-                        unit="R-value"
-                      ></ing-input-range>
-                      <ing-input-range
-                        name="insideTemp"
-                        min="0"
-                        max="30"
-                        step="1"
-                        .modelValue="${20}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Building Inside Temperature"
-                        unit="Degrees Celsius"
-                      ></ing-input-range>
-                      <ing-input-range
-                        name="renewableEnergy"
-                        min="0"
-                        max="50000"
-                        step="100"
-                        .modelValue="${20000}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Renewable Energy Generation Capacity"
-                        unit="kWh"
-                      ></ing-input-range>
-                    </form>
-                  </ing-form>
-                </ing-accordion-content>
-                <h3 slot="invoker">
-                  <ing-accordion-invoker-button>Travel</ing-accordion-invoker-button>
-                </h3>
-                <ing-accordion-content slot="content">
-                  <ing-form @submit="${ev => this._handleTravelValueChange(ev)}">
-                    <form>
-                      <ing-input-range
-                        name="kilometersPerWeek"
-                        min="0"
-                        max="500"
-                        step="10"
-                        .modelValue="${30}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Car"
-                        unit="km/week"
-                      ></ing-input-range>
-                    </form>
-                  </ing-form>
-                </ing-accordion-content>
-              </ing-accordion>
+            <div slot="content">
+              <div class="slider-content">
+                <ing-form  @submit="${ev => this._handleGeneralValueChange(ev)}"">
+                  <form>
+                    <ing-input-range
+                      id="backToOffice"
+                      name="backToOffice"
+                      min="0"
+                      max="100"
+                      step="1"
+                      .modelValue="${this.b20SliderValue}"
+                      @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                      unit="%"
+                      label="Employees Back to Office"
+                    ></ing-input-range>
+                    <ing-input-range
+                      id="daysPerWeek"
+                      name="daysPerWeek"
+                      min="0"
+                      max="5"
+                      step="1"
+                      .modelValue="${2}"
+                      @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                      label="# Days per Week in Office"
+                      unit="Days"
+                    ></ing-input-range>
+                    <ing-input-range
+                      id="buildingsOpen"
+                      name="buildingsOpen"
+                      min="0"
+                      max="20"
+                      step="1"
+                      .modelValue="${10}"
+                      @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                      label="Buildings Open"
+                    ></ing-input-range>
+                  </form>
+                </ing-form>
+                <ing-accordion>
+                  <h3 slot="invoker">
+                    <ing-accordion-invoker-button>Home</ing-accordion-invoker-button>
+                  </h3>
+                  <ing-accordion-content slot="content">
+                    <ing-form @submit="${ev => this._handleHomeValueChange(ev)}">
+                      <form>
+                        <ing-input-range
+                          name="floorSize"
+                          min="0"
+                          max="500"
+                          step="10"
+                          .modelValue="${100}"
+                          @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                          label="Floor Size"
+                          unit="square meters"
+                        ></ing-input-range>
+                        <ing-input-range
+                          name="insulation"
+                          min="0"
+                          max="100"
+                          step="1"
+                          .modelValue="${10}"
+                          @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                          label="House Insulation"
+                          unit="R-value"
+                        ></ing-input-range>
+                        <ing-input-range
+                          name="insideTemp"
+                          min="0"
+                          max="30"
+                          step="1"
+                          .modelValue="${20}"
+                          @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                          label="Home Inside Temperature"
+                          unit="Degrees Celsius"
+                        ></ing-input-range>
+                        <ing-input-range
+                          name="renewableEnergy"
+                          min="0"
+                          max="50000"
+                          step="100"
+                          .modelValue="${20000}"
+                          @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                          label="Renewable Energy Generation Capacity"
+                          unit="kWh"
+                        ></ing-input-range>
+                      </form>
+                    </ing-form>
+                  </ing-accordion-content>
+                  <h3 slot="invoker">
+                    <ing-accordion-invoker-button>Office</ing-accordion-invoker-button>
+                  </h3>
+                  <ing-accordion-content slot="content">
+                    <ing-form @submit="${ev => this._handleOfficeValueChange(ev)}">
+                      <form>
+                        <ing-input-range
+                          name="floorSize"
+                          min="0"
+                          max="50000"
+                          step="500"
+                          .modelValue="${10000}"
+                          @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                          label="Floor Size"
+                          unit="square meters"
+                        ></ing-input-range>
+                        <ing-input-range
+                          name="insulation"
+                          min="0"
+                          max="100"
+                          step="1"
+                          .modelValue="${10}"
+                          @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                          label="Building Insulation"
+                          unit="R-value"
+                        ></ing-input-range>
+                        <ing-input-range
+                          name="insideTemp"
+                          min="0"
+                          max="30"
+                          step="1"
+                          .modelValue="${20}"
+                          @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                          label="Building Inside Temperature"
+                          unit="Degrees Celsius"
+                        ></ing-input-range>
+                        <ing-input-range
+                          name="renewableEnergy"
+                          min="0"
+                          max="50000"
+                          step="100"
+                          .modelValue="${20000}"
+                          @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                          label="Renewable Energy Generation Capacity"
+                          unit="kWh"
+                        ></ing-input-range>
+                      </form>
+                    </ing-form>
+                  </ing-accordion-content>
+                  <h3 slot="invoker">
+                    <ing-accordion-invoker-button>Travel</ing-accordion-invoker-button>
+                  </h3>
+                  <ing-accordion-content slot="content">
+                    <ing-form @submit="${ev => this._handleTravelValueChange(ev)}">
+                      <form>
+                        <ing-input-range
+                          name="kilometersPerWeek"
+                          min="0"
+                          max="500"
+                          step="10"
+                          .modelValue="${30}"
+                          @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                          label="Car"
+                          unit="km/week"
+                        ></ing-input-range>
+                      </form>
+                    </ing-form>
+                  </ing-accordion-content>
+                </ing-accordion>
+              </div>
               <ing-button class="button__baseline">Set New Baseline</ing-button>
             </div>
           </ing-card>
@@ -507,9 +509,10 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       }
 
       .slider-content {
-        height: calc(100vh - 142px);
+        height: calc(100vh - 211px);
         overflow-y: auto;
-        padding-right: 24px;
+        padding-right: ${spacer24};
+        margin-bottom: ${spacer24}
       }
 
       .flexbox {
