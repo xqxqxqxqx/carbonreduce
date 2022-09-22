@@ -100,6 +100,26 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
       datasets: [
         {
           type: 'line',
+          label: 'CO2 Goal',
+          data: Array(100).fill(goal),
+          yAxisID: "ygoal",
+          fill: false,
+          borderColor: RED,
+          tension: 0
+        },
+        {
+          type: 'line',
+          label: 'B2O %',
+          axis: 'y',
+          data: Array(300).fill(b20),
+          yAxisID: "yb2o",
+          fill: false,
+          indexAxis: 'y',
+          borderColor: BLUE,
+          tension: 0
+        },
+        {
+          type: 'line',
           label: 'Travel Consumption',
           data: dataSets[1],
           yAxisID: "ystack",
@@ -136,26 +156,6 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
           },
           borderColor: COLOR_OFFICE,
           tension: 0.3
-        },
-        {
-          type: 'line',
-          label: 'CO2 Goal',
-          data: Array(100).fill(goal),
-          yAxisID: "ygoal",
-          fill: false,
-          borderColor: RED,
-          tension: 0
-        },
-        {
-          type: 'line',
-          label: 'B2O %',
-          axis: 'y',
-          data: Array(300).fill(b20),
-          yAxisID: "yb2o",
-          fill: false,
-          indexAxis: 'y',
-          borderColor: BLUE,
-          tension: 0
         }
       ]
     },
