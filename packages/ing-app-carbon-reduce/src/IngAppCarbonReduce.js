@@ -12,7 +12,10 @@ import {
   spacer24,
   white,
   font19Mixin,
-  spacer64
+  spacer64,
+  IngAccordion,
+  IngIcon,
+  registerDefaultIconsets
 } from 'ing-web';
 
 import { IngHeader } from '../../ing-example-nav-bar/src/IngHeader.js';
@@ -20,9 +23,10 @@ import { IngCardCustom } from "../../ing-card-custom/src/IngCardCustom";
 import { IngSliderCustom } from "../../ing-slider-custom/src/IngSliderCustom";
 import { IngTabPanelCustom } from "../../ing-tab-panel-custom/src/IngTabPanelCustom";
 import { IngTabCustom } from "../../ing-tab-custom/src/IngTabCustom";
+import { IngAccordionContentCustom } from "../../ing-accordion-content-custom/src/IngAccordionContentCustom";
+import { IngAccordionInvokerButtonCustom } from "../../ing-accordion-invoker-button-custom/src/IngAccordionInvokerButtonCustom";
 import { createPolarChart, createPolarChartBaseline, createLineChart } from '../../../helpers/chart_generator.js';
 
-import { Chart, registerables } from 'chart.js';
 import {
   calcCarUsage,
   calcHomeElectricityUsage,
@@ -30,7 +34,10 @@ import {
   calcHomeUsage, calcOfficeElectricityUsage,
   calcOfficeHeatingUsage, calcOfficeUsage, calcPublicTransportUsage, calcTravelUsage
 } from "../../../helpers/formulas";
+
 Chart.register(...registerables);
+import { Chart, registerables } from 'chart.js';
+
 
 export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
   static get scopedElements() {
@@ -40,8 +47,12 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       'ing-input-range': IngSliderCustom,
       'ing-tabs': IngTabs,
       'ing-tab': IngTabCustom,
+      'ing-icon': IngIcon,
       'ing-tab-panel': IngTabPanelCustom,
       'ing-form': IngForm,
+      'ing-accordion': IngAccordion,
+      'ing-accordion-content': IngAccordionContentCustom,
+      'ing-accordion-invoker-button': IngAccordionInvokerButtonCustom,
     };
   }
 
@@ -61,9 +72,11 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
 
   constructor() {
     super();
+    registerDefaultIconsets();
+
     this.title = 'Carbon Configurator';
     this.polarChartBaselineDataset = [300, 100, 200, 450, 600, 850];
-    
+
     this.polarChartMaxVal = Math.max(
       ...this._getPolarDataSet(),
       ...this.polarChartBaselineDataset
@@ -228,9 +241,11 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                   ></ing-input-range>
                 </form>
               </ing-form>
-              <ing-tabs .selectedIndex=${0}>
-                <ing-tab slot="tab">Home</ing-tab>
-                <ing-tab-panel slot="panel">
+              <ing-accordion>
+                <h3 slot="invoker">
+                  <ing-accordion-invoker-button>Home</ing-accordion-invoker-button>
+                </h3>
+                <ing-accordion-content slot="content">
                   <ing-form @submit="${ev => this._handleHomeValueChange(ev)}">
                     <form>
                       <ing-input-range
@@ -241,7 +256,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         .modelValue="${100}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="Floor Size"
-                        help-text="Square meters"
+                        unit="square meters"
                       ></ing-input-range>
                       <ing-input-range
                         name="insulation"
@@ -251,7 +266,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         .modelValue="${10}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="House Insulation"
-                        help-text="R-value"
+                        unit="R-value"
                       ></ing-input-range>
                       <ing-input-range
                         name="insideTemp"
@@ -261,7 +276,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         .modelValue="${20}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="Home Inside Temperature"
-                        help-text="Degrees Celsius"
+                        unit="Degrees Celsius"
                       ></ing-input-range>
                       <ing-input-range
                         name="renewableEnergy"
@@ -271,13 +286,15 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         .modelValue="${20000}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="Renewable Energy Generation Capacity"
-                        help-text="kWh"
+                        unit="kWh"
                       ></ing-input-range>
                     </form>
                   </ing-form>
-                </ing-tab-panel>
-                <ing-tab slot="tab">Office</ing-tab>
-                <ing-tab-panel slot="panel">
+                </ing-accordion-content>
+                <h3 slot="invoker">
+                  <ing-accordion-invoker-button>Office</ing-accordion-invoker-button>
+                </h3>
+                <ing-accordion-content slot="content">
                   <ing-form @submit="${ev => this._handleOfficeValueChange(ev)}">
                     <form>
                       <ing-input-range
@@ -288,7 +305,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         .modelValue="${10000}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="Floor Size"
-                        help-text="Square meters"
+                        unit="square meters"
                       ></ing-input-range>
                       <ing-input-range
                         name="insulation"
@@ -298,7 +315,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         .modelValue="${10}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="Building Insulation"
-                        help-text="R-value"
+                        unit="R-value"
                       ></ing-input-range>
                       <ing-input-range
                         name="insideTemp"
@@ -308,7 +325,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         .modelValue="${20}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="Building Inside Temperature"
-                        help-text="Degrees Celsius"
+                        unit="Degrees Celsius"
                       ></ing-input-range>
                       <ing-input-range
                         name="renewableEnergy"
@@ -318,13 +335,15 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         .modelValue="${20000}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="Renewable Energy Generation Capacity"
-                        help-text="kWh"
+                        unit="kWh"
                       ></ing-input-range>
                     </form>
                   </ing-form>
-                </ing-tab-panel>
-                <ing-tab slot="tab">Travel</ing-tab>
-                <ing-tab-panel slot="panel">
+                </ing-accordion-content>
+                <h3 slot="invoker">
+                  <ing-accordion-invoker-button>Travel</ing-accordion-invoker-button>
+                </h3>
+                <ing-accordion-content slot="content">
                   <ing-form @submit="${ev => this._handleTravelValueChange(ev)}">
                     <form>
                       <ing-input-range
@@ -335,12 +354,12 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         .modelValue="${30}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="Car"
-                        help-text="kilometers/week"
+                        unit="km/week"
                       ></ing-input-range>
                     </form>
                   </ing-form>
-                </ing-tab-panel>
-              </ing-tabs>
+                </ing-accordion-content>
+              </ing-accordion>
             </div>
           </ing-card>
         </div>
@@ -419,13 +438,13 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
         width: 10px;
       }
       ::-webkit-scrollbar-track {
-        background: #f1f1f1; 
+        background: #f1f1f1;
       }
       ::-webkit-scrollbar-thumb {
-        background: #888; 
+        background: #888;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #555; 
+        background: #555;
       }
       /* End of Custom scrollbar */
     `;
