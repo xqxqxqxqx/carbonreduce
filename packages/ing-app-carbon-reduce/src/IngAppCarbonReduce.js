@@ -99,15 +99,11 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     };
     this.inputsHomeSlidersBaseline = {
       "gasUsage": 100,
-      "electricityUsage": 10,
-      "insideTemp": 20,
-      "renewableEnergy": 20000
+      "electricityUsage": 10
     };
     this.inputsOfficeSlidersBaseline = {
-      "gasUsage": 10000,
-      "electricityUsage": 10,
-      "insideTemp": 20,
-      "renewableEnergy": 20000
+      "gasUsage": 200,
+      "electricityUsage": 10
     };
     this.inputsTravelSlidersBaseline = {
       "kilometersPerWeek": 30
