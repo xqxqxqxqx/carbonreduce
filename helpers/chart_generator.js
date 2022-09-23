@@ -189,7 +189,7 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
           display: true,
           position: "left",
           min: 0,
-          suggestedMax: 300,
+          sugguestMax: Math.max(goal, ...dataSets),
           title: {
             display: true,
             text: 'CO2 emission (kt)',
@@ -198,10 +198,10 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
         },
         ygoal: {
           type: "linear",
-          display: false,
+          display: true,
           stacked: false,
           min: 0,
-          suggestedMax: 300
+          sugguestMax: Math.max(goal, ...dataSets)
         },
         yb2o: {
           type: "linear",
@@ -210,7 +210,7 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
           beginAtZero: true,
           min: 0,
           suggestedMin: 0,
-          suggestedMax: 100
+          sugguestMax: Math.max(goal, ...dataSets)
         }
       }
     }

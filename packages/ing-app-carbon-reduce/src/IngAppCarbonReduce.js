@@ -21,7 +21,8 @@ import {
   font16Mixin,
   font24BoldMixin,
   orange,
-  spacer32
+  spacer32,
+  font12Mixin
 } from 'ing-web';
 
 import { IngHeader } from '../../ing-example-nav-bar/src/IngHeader.js';
@@ -108,15 +109,16 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       "daysPerWeek": 2
     };
     this.inputsHomeSlidersBaseline = {
-      "gasUsage": 500,
-      "electricityUsage": 1000
+      "gasUsage": 15.6,
+      "electricityUsage": 37.2
     };
     this.inputsOfficeSlidersBaseline = {
-      "gasUsage": 1000,
-      "electricityUsage": 2000
+      "gasUsage": 5.33,
+      "electricityUsage": 5.87
     };
     this.inputsTravelSlidersBaseline = {
-      "kilometersPerWeek": 300
+      "kilometersPerDay": 30,
+      "carUserPerc": 35
     };
 
     // Set initial input values
@@ -125,12 +127,13 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     this.inputsOfficeSliders = this.inputsOfficeSlidersBaseline;
     this.inputsTravelSliders = this.inputsTravelSlidersBaseline;
 
-    this.goalCO2 = 150;
+    this.goalCO2 = 26.25;
     this.achievedCO2 = 67;
     this.baselineTotalCO2 = 300;
 
     this.title = 'Carbon Configurator';
     this.polarChartBaselineDataset = this._getPolarDataSet();
+    this.baselineTotalCO2 = Math.round(this.polarChartBaselineDataset.reduce((partialSum, a) => partialSum + a, 0));
 
     this.polarChartMaxVal = Math.max(
       ...this._getPolarDataSet(),
@@ -252,29 +255,24 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
   }
 
   _getAreaDataSet() {
-    // TODO: input should be taken from sliders
-    const homeUsage = calcHomeUsage(this.inputsHomeSliders);
-    const officeUsage = calcOfficeUsage(this.inputsOfficeSliders);
-    const travelUsage = calcTravelUsage(this.inputsTravelSliders);
-
-    // TODO: Add impact of days per week
-    const homeChart = Array.from({length: 100}, (e, i) => homeUsage * (1-(i+1)/100));
-    const officeChart = Array.from({length: 100}, (e, i) => officeUsage * (i+1)/100);
-    const travelChart = Array.from({length: 100}, (e, i) => travelUsage * (i+1)/100);
-
+    const homeChart = Array.from({length: 100}, (e, i) => calcHomeUsage(this.inputsHomeSliders, {"backToOffice": i+1, "daysPerWeek": this.inputsGeneralSliders["daysPerWeek"]}));
+    const officeChart = Array.from({length: 100}, (e, i) => calcOfficeUsage(this.inputsOfficeSliders, {"backToOffice": i+1, "daysPerWeek": this.inputsGeneralSliders["daysPerWeek"]}));
+    const travelChart = Array.from({length: 100}, (e, i) => calcTravelUsage(this.inputsTravelSliders, {"backToOffice": i+1, "daysPerWeek": this.inputsGeneralSliders["daysPerWeek"]}));
     return [homeChart, travelChart, officeChart];
   }
 
   _getPolarDataSet() {
     // TODO: input should be taken from sliders
-    return [
+    let polarDataSet = [
       calcOfficeGasUsage(this.inputsOfficeSliders, this.inputsGeneralSliders),
       calcOfficeElectricityUsage(this.inputsOfficeSliders, this.inputsGeneralSliders),
       calcCarUsage(this.inputsTravelSliders, this.inputsGeneralSliders),
       calcNonCarUsage(this.inputsTravelSliders, this.inputsGeneralSliders),
       calcHomeGasUsage(this.inputsHomeSliders, this.inputsGeneralSliders),
       calcHomeElectricityUsage(this.inputsHomeSliders, this.inputsGeneralSliders)
-    ]
+    ];
+    this.achievedCO2 = Math.round(polarDataSet.reduce((partialSum, a) => partialSum + a, 0));
+    return polarDataSet;
   }
 
   _handleSetNewBaseline(ev) {
@@ -284,6 +282,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     this.inputsOfficeSlidersBaseline = this.inputsOfficeSliders;
     this.inputsTravelSlidersBaseline = this.inputsTravelSliders;
     this.polarChartBaselineDataset = this._getPolarDataSet();
+    this.baselineTotalCO2 = Math.round(this.polarChartBaselineDataset.reduce((partialSum, a) => partialSum + a, 0));
 
     this.polarChart.destroy();
     this.polarChartBaseline.destroy();
@@ -304,7 +303,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
               <canvas id="polar-chart" width="300" height="300"></canvas>
             </div>
           </div>
-          <div>
+          <div style="margin-top: ${spacer12};">
             <ing-card>
               <div slot="heading" class="card-title">Back-to-office Impact Overview</div>
               <div slot="content">
@@ -315,7 +314,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
               <ing-card style="flex: 1;">
                 <div slot="content" class="achievement__flexbox">
                   <img width="80" src="../../assets/sustainable.png" alt="Illustration" style="flex: 1;">
-                  <p style="flex: 2;"> ING will achieve
+                  <p style="flex: 2;"> ING will emit
                     ${this.baselineTotalCO2 >= this.achievedCO2 ? html`
                       <span class="card-highlight">${this.baselineTotalCO2 - this.achievedCO2}</span> kiloton CO2<br>less than the baseline
                     ` : html`
@@ -327,10 +326,14 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
               <ing-card style="flex: 1;">
                 <div slot="content" class="achievement__flexbox">
                   <div style="flex: 1;">
-                    <div class="doughnut-label">${this.achievedCO2} / ${this.goalCO2}</div>
+                    <div class="doughnut-label">Goal ${this.goalCO2} kt <br> Emitted ${this.achievedCO2} kt</div>
                     <canvas id="doughnut-chart" width="90" height="80"></canvas>
                   </div>
-                  <p style="flex: 2;">ING will achieve<span class="card-highlight">${Math.round(this.achievedCO2/this.goalCO2 * 100)}%</span><br>of the CO2 emission target</p>
+                  ${this.achievedCO2 <= this.goalCO2 ? html`
+                    <p style="flex: 2;">ING will <span class="card-highlight">fully</span><br> achieve the CO2 emission target of 2025</p>
+                  ` : html`
+                    <p style="flex: 2;">ING will achieve<span class="card-highlight">${Math.round(this.goalCO2/this.achievedCO2 * 100)}%</span><br>CO2 emission target of 2025</p>
+                  `}
                 </div>
               </ing-card>
             </div>
@@ -376,8 +379,8 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         <ing-input-range
                           name="gasUsage"
                           min="0"
-                          max="1000"
-                          step="10"
+                          max="60"
+                          step="1"
                           .modelValue="${this.inputsHomeSliders["gasUsage"]}"
                           @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                           label="Gas Consumption"
@@ -386,8 +389,8 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         <ing-input-range
                           name="electricityUsage"
                           min="0"
-                          max="5000"
-                          step="10"
+                          max="150"
+                          step="1"
                           .modelValue="${this.inputsHomeSliders["electricityUsage"]}"
                           @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                           label="Electricity Consumption"
@@ -405,22 +408,22 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         <ing-input-range
                           name="gasUsage"
                           min="0"
-                          max="2000"
-                          step="10"
+                          max="25"
+                          step="1"
                           .modelValue="${this.inputsOfficeSliders["gasUsage"]}"
                           @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                           label="Gas Consumption"
-                          unit="GJ"
+                          unit="cubic meters"
                         ></ing-input-range>
                         <ing-input-range
                           name="electricityUsage"
                           min="0"
-                          max="10000"
-                          step="10"
+                          max="30"
+                          step="1"
                           .modelValue="${this.inputsOfficeSliders["electricityUsage"]}"
                           @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                           label="Electricity Consumption"
-                          unit="MWh"
+                          unit="kWh"
                         ></ing-input-range>
                       </form>
                     </ing-form>
@@ -432,14 +435,24 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                     <ing-form @submit="${ev => this._handleTravelValueChange(ev)}">
                       <form>
                         <ing-input-range
-                          name="kilometersPerWeek"
+                          name="kilometersPerDay"
                           min="0"
-                          max="1000"
-                          step="10"
-                          .modelValue="${this.inputsTravelSliders["kilometersPerWeek"]}"
+                          max="150"
+                          step="1"
+                          .modelValue="${this.inputsTravelSliders["kilometersPerDay"]}"
                           @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                          label="Car"
-                          unit="km/week"
+                          label="Travel Distance"
+                          unit="km/day"
+                        ></ing-input-range>
+                        <ing-input-range
+                          name="carUserPerc"
+                          min="0"
+                          max="100"
+                          step="3"
+                          .modelValue="${this.inputsTravelSliders["carUserPerc"]}"
+                          @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                          label="Car User Percentage"
+                          unit="%"
                         ></ing-input-range>
                       </form>
                     </ing-form>
@@ -516,12 +529,12 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       }
 
       .doughnut-label {
-        ${font16Mixin()};
+        ${font12Mixin()};
         color: ${orange};
         position: absolute;
-        top: 47%;
+        top: 44%;
         text-align: center;
-        width: 27%;
+        width: 25%;
       }
 
       .card-title {
