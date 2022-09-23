@@ -35,9 +35,9 @@ import {
 import {
   calcCarUsage,
   calcHomeElectricityUsage,
-  calcHomeHeatingUsage,
+  calcHomeGasUsage,
   calcHomeUsage, calcOfficeElectricityUsage,
-  calcOfficeHeatingUsage, calcOfficeUsage, calcPublicTransportUsage, calcTravelUsage
+  calcOfficeGasUsage, calcOfficeUsage, calcNonCarUsage, calcTravelUsage
 } from "../../../helpers/formulas";
 
 Chart.register(...registerables);
@@ -71,12 +71,20 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       ctxAreaChart: { type: Object },
       areaChartBaseline: { type: Array },
       polarChart: { type: Object },
+      polarChartBaseline: { type: Object },
       polarChartDataMax: { type: Number },
       polarChartBaselineDataset: { type: Array },
       polarChartDataset: { type: Array },
-      b20SliderValue: { type: Number },
       daysPerWeekSliderValue: { type: Number },
       goalCO2: { type: Number },
+      inputsGeneralSliders: { type: Object },
+      inputsHomeSliders: { type: Object },
+      inputsOfficeSliders: { type: Object },
+      inputsTravelSliders: { type: Object },
+      inputsGeneralSlidersBaseline: { type: Object },
+      inputsHomeSlidersBaseline: { type: Object },
+      inputsOfficeSlidersBaseline: { type: Object },
+      inputsTravelSlidersBaseline: { type: Object },
     };
   }
 
@@ -84,11 +92,33 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     super();
     registerDefaultIconsets();
 
-    this.b20SliderValue = 40;
+    // Baseline slider input values
+    this.inputsGeneralSlidersBaseline = {
+      "backToOffice": 50,
+      "daysPerWeek": 2
+    };
+    this.inputsHomeSlidersBaseline = {
+      "gasUsage": 100,
+      "electricityUsage": 10
+    };
+    this.inputsOfficeSlidersBaseline = {
+      "gasUsage": 200,
+      "electricityUsage": 10
+    };
+    this.inputsTravelSlidersBaseline = {
+      "kilometersPerWeek": 30
+    };
+
+    // Set initial input values
+    this.inputsGeneralSliders = this.inputsGeneralSlidersBaseline;
+    this.inputsHomeSliders = this.inputsHomeSlidersBaseline;
+    this.inputsOfficeSliders = this.inputsOfficeSlidersBaseline;
+    this.inputsTravelSliders = this.inputsTravelSlidersBaseline;
+
     this.goalCO2 = 150;
 
     this.title = 'Carbon Configurator';
-    this.polarChartBaselineDataset = [300, 100, 200, 450, 600, 850];
+    this.polarChartBaselineDataset = this._getPolarDataSet();
 
     this.polarChartMaxVal = Math.max(
       ...this._getPolarDataSet(),
@@ -108,8 +138,8 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
 
     // Initialise all charts with default baseline
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
-    this.ctxPolarChartBaseline = createPolarChartBaseline(this.ctxPolarChartBaseline, this.polarChartMaxVal, this.polarChartBaselineDataset);
-    this.areaChart = createAreaChart(this.ctxAreaChart, this.areaChartBaseline, this.goalCO2, this.b20SliderValue);
+    this.polarChartBaseline = createPolarChartBaseline(this.ctxPolarChartBaseline, this.polarChartMaxVal, this.polarChartBaselineDataset);
+    this.areaChart = createAreaChart(this.ctxAreaChart, this.areaChartBaseline, this.goalCO2, this.inputsHomeSliders["backToOffice"]);
     // Sliders' position is set as fixed causing the element taken out of flow of DOM and flexbox
     // This is a workaround to configure its width in flex-box way
     setTimeout(function(){
@@ -127,60 +157,83 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
   // Update charts when one of the General sliders has changed
   _handleGeneralValueChange(ev) {
     // Get data from form
-    const data = ev.currentTarget.modelValue;
-    this.b20SliderValue = data['backToOffice'];
+    this.inputsGeneralSliders = ev.currentTarget.modelValue;
     // Destroy old charts
     this.polarChart.destroy();
+    this.polarChartBaseline.destroy();
     this.areaChart.destroy();
     // Redraw charts with updated inputs
     // TODO: Replace parameters with data from sliders
+    this.polarChartMaxVal = Math.max(
+      ...this._getPolarDataSet(),
+      ...this.polarChartBaselineDataset
+    );
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
+    this.polarChartBaseline = createPolarChartBaseline(this.ctxPolarChartBaseline, this.polarChartMaxVal, this.polarChartBaselineDataset);
 
-    this.areaChart = createAreaChart(this.ctxAreaChart, this._getAreaDataSet(), this.goalCO2, this.b20SliderValue);
+    this.areaChart = createAreaChart(this.ctxAreaChart, this._getAreaDataSet(), this.goalCO2, this.inputsGeneralSliders['backToOffice']);
   }
 
   // Update charts when one of the Home sliders has changed
   _handleHomeValueChange(ev) {
     console.log(ev.currentTarget.modelValue)
     // Get data from form
-    const data = ev.currentTarget.modelValue;
+    this.inputsHomeSliders = ev.currentTarget.modelValue;
     // Destroy old charts
     this.polarChart.destroy();
+    this.polarChartBaseline.destroy();
     this.areaChart.destroy();
     // Redraw charts with updated inputs
     // TODO: Replace parameters with data from sliders
+    this.polarChartMaxVal = Math.max(
+      ...this._getPolarDataSet(),
+      ...this.polarChartBaselineDataset
+    );
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
+    this.polarChartBaseline = createPolarChartBaseline(this.ctxPolarChartBaseline, this.polarChartMaxVal, this.polarChartBaselineDataset);
 
-    this.areaChart = createAreaChart(this.ctxAreaChart, this._getAreaDataSet(), this.goalCO2, this.b20SliderValue);
+    this.areaChart = createAreaChart(this.ctxAreaChart, this._getAreaDataSet(), this.goalCO2, this.inputsGeneralSliders['backToOffice']);
   }
 
   // Update charts when one of the Office sliders has changed
   _handleOfficeValueChange(ev) {
     console.log(ev.currentTarget.modelValue);
     // Get data from form
-    const data = ev.currentTarget.modelValue;
+    this.inputsOfficeSliders = ev.currentTarget.modelValue;
     // Destroy old charts
     this.polarChart.destroy();
+    this.polarChartBaseline.destroy();
     this.areaChart.destroy();
     // Redraw charts with updated inputs
     // TODO: Replace parameters with data from sliders
+    this.polarChartMaxVal = Math.max(
+      ...this._getPolarDataSet(),
+      ...this.polarChartBaselineDataset
+    );
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
+    this.polarChartBaseline = createPolarChartBaseline(this.ctxPolarChartBaseline, this.polarChartMaxVal, this.polarChartBaselineDataset);
 
-    this.areaChart = createAreaChart(this.ctxAreaChart, this._getAreaDataSet(), this.goalCO2, this.b20SliderValue);
+    this.areaChart = createAreaChart(this.ctxAreaChart, this._getAreaDataSet(), this.goalCO2, this.inputsGeneralSliders['backToOffice']);
   }
 
   // Update charts when one of the Travel sliders has changed
   _handleTravelValueChange(ev) {
     console.log(ev.currentTarget.modelValue);
     // Get data from form
-    const data = ev.currentTarget.modelValue;
+    this.inputsTravelSliders = ev.currentTarget.modelValue;
     // Destroy old charts
     this.polarChart.destroy();
+    this.polarChartBaseline.destroy();
     this.areaChart.destroy();
     // Redraw charts with updated inputs
+    this.polarChartMaxVal = Math.max(
+      ...this._getPolarDataSet(),
+      ...this.polarChartBaselineDataset
+    );
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
+    this.polarChartBaseline = createPolarChartBaseline(this.ctxPolarChartBaseline, this.polarChartMaxVal, this.polarChartBaselineDataset);
 
-    this.areaChart = createAreaChart(this.ctxAreaChart, this._getAreaDataSet(), this.goalCO2, this.b20SliderValue);
+    this.areaChart = createAreaChart(this.ctxAreaChart, this._getAreaDataSet(), this.goalCO2, this.inputsGeneralSliders['backToOffice']);
   }
 
   _getAreaDataSet() {
@@ -195,13 +248,28 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
   _getPolarDataSet() {
     // TODO: input should be taken from sliders
     return [
-      calcHomeHeatingUsage(1,2),
-      calcHomeElectricityUsage(1,2),
-      calcOfficeHeatingUsage(1,2),
-      calcOfficeElectricityUsage(1,2),
-      calcCarUsage(1,2),
-      calcPublicTransportUsage(1,2)
+      calcOfficeGasUsage(this.inputsOfficeSliders),
+      calcOfficeElectricityUsage(this.inputsOfficeSliders),
+      calcCarUsage(this.inputsTravelSliders),
+      calcNonCarUsage(this.inputsTravelSliders),
+      calcHomeGasUsage(this.inputsHomeSliders),
+      calcHomeElectricityUsage(this.inputsHomeSliders)
     ]
+  }
+
+  _handleSetNewBaseline(ev) {
+    // Set initial input values
+    this.inputsGeneralSlidersBaseline = this.inputsGeneralSliders;
+    this.inputsHomeSlidersBaseline = this.inputsHomeSliders;
+    this.inputsOfficeSlidersBaseline = this.inputsOfficeSliders;
+    this.inputsTravelSlidersBaseline = this.inputsTravelSliders;
+    this.polarChartBaselineDataset = this._getPolarDataSet();
+
+    this.polarChart.destroy();
+    this.polarChartBaseline.destroy();
+
+    this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
+    this.polarChartBaseline = createPolarChartBaseline(this.ctxPolarChartBaseline, this.polarChartMaxVal, this.polarChartBaselineDataset);
   }
 
   render() {
@@ -243,7 +311,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                     min="0"
                     max="100"
                     step="1"
-                    .modelValue="${this.b20SliderValue}"
+                    .modelValue="${this.inputsGeneralSliders["backToOffice"]}"
                     @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                     unit="%"
                     label="Employees Back to Office"
@@ -254,124 +322,74 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                     min="0"
                     max="5"
                     step="1"
-                    .modelValue="${2}"
+                    .modelValue="${this.inputsGeneralSliders["daysPerWeek"]}"
                     @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                     label="# Days per Week in Office"
                     unit="Days"
-                  ></ing-input-range>
-                  <ing-input-range
-                    id="buildingsOpen"
-                    name="buildingsOpen"
-                    min="0"
-                    max="20"
-                    step="1"
-                    .modelValue="${10}"
-                    @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                    label="Buildings Open"
                   ></ing-input-range>
                 </form>
               </ing-form>
               <ing-accordion>
                 <h3 slot="invoker">
-                  <ing-accordion-invoker-button>Home</ing-accordion-invoker-button>
+                  <ing-accordion-invoker-button>Home Consumption</ing-accordion-invoker-button>
                 </h3>
                 <ing-accordion-content slot="content">
                   <ing-form @submit="${ev => this._handleHomeValueChange(ev)}">
                     <form>
                       <ing-input-range
-                        name="floorSize"
+                        name="gasUsage"
                         min="0"
                         max="500"
                         step="10"
-                        .modelValue="${100}"
+                        .modelValue="${this.inputsHomeSliders["gasUsage"]}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Floor Size"
-                        unit="square meters"
+                        label="Gas Consumption"
+                        unit="cubic meters"
                       ></ing-input-range>
                       <ing-input-range
-                        name="insulation"
+                        name="electricityUsage"
                         min="0"
                         max="100"
                         step="1"
-                        .modelValue="${10}"
+                        .modelValue="${this.inputsHomeSliders["electricityUsage"]}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="House Insulation"
-                        unit="R-value"
-                      ></ing-input-range>
-                      <ing-input-range
-                        name="insideTemp"
-                        min="0"
-                        max="30"
-                        step="1"
-                        .modelValue="${20}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Home Inside Temperature"
-                        unit="Degrees Celsius"
-                      ></ing-input-range>
-                      <ing-input-range
-                        name="renewableEnergy"
-                        min="0"
-                        max="50000"
-                        step="100"
-                        .modelValue="${20000}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Renewable Energy Generation Capacity"
+                        label="Electricity Consumption"
                         unit="kWh"
                       ></ing-input-range>
                     </form>
                   </ing-form>
                 </ing-accordion-content>
                 <h3 slot="invoker">
-                  <ing-accordion-invoker-button>Office</ing-accordion-invoker-button>
+                  <ing-accordion-invoker-button>Office Consumption</ing-accordion-invoker-button>
                 </h3>
                 <ing-accordion-content slot="content">
                   <ing-form @submit="${ev => this._handleOfficeValueChange(ev)}">
                     <form>
                       <ing-input-range
-                        name="floorSize"
+                        name="gasUsage"
                         min="0"
                         max="50000"
                         step="500"
-                        .modelValue="${10000}"
+                        .modelValue="${this.inputsOfficeSliders["gasUsage"]}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Floor Size"
-                        unit="square meters"
+                        label="Gas Consumption"
+                        unit="cubic meters"
                       ></ing-input-range>
                       <ing-input-range
-                        name="insulation"
+                        name="electricityUsage"
                         min="0"
                         max="100"
                         step="1"
-                        .modelValue="${10}"
+                        .modelValue="${this.inputsOfficeSliders["electricityUsage"]}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Building Insulation"
-                        unit="R-value"
-                      ></ing-input-range>
-                      <ing-input-range
-                        name="insideTemp"
-                        min="0"
-                        max="30"
-                        step="1"
-                        .modelValue="${20}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Building Inside Temperature"
-                        unit="Degrees Celsius"
-                      ></ing-input-range>
-                      <ing-input-range
-                        name="renewableEnergy"
-                        min="0"
-                        max="50000"
-                        step="100"
-                        .modelValue="${20000}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Renewable Energy Generation Capacity"
+                        label="Electricity Consumption"
                         unit="kWh"
                       ></ing-input-range>
                     </form>
                   </ing-form>
                 </ing-accordion-content>
                 <h3 slot="invoker">
-                  <ing-accordion-invoker-button>Travel</ing-accordion-invoker-button>
+                  <ing-accordion-invoker-button>Business Travel/Commute</ing-accordion-invoker-button>
                 </h3>
                 <ing-accordion-content slot="content">
                   <ing-form @submit="${ev => this._handleTravelValueChange(ev)}">
@@ -381,7 +399,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         min="0"
                         max="500"
                         step="10"
-                        .modelValue="${30}"
+                        .modelValue="${this.inputsTravelSliders["kilometersPerWeek"]}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                         label="Car"
                         unit="km/week"
@@ -390,7 +408,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                   </ing-form>
                 </ing-accordion-content>
               </ing-accordion>
-              <ing-button class="button__baseline">Set New Baseline</ing-button>
+              <ing-button @click="${ev => this._handleSetNewBaseline(ev)}" class="button__baseline">Set New Baseline</ing-button>
             </div>
           </ing-card>
         </div>
