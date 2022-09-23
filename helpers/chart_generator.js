@@ -93,6 +93,12 @@ export function createPolarChartBaseline (ctx, maxVal, dataSet) {
   });
 }
 
+function calcMax(dataSets, goal) {
+  let result = dataSets[0].map((num, i) => num + dataSets[1][i]);
+  result = result.map((num, i) => num + dataSets[2][i]);
+  return Math.max(goal, ...result)
+}
+
 export function createAreaChart (ctx, dataSets, goal, b20) {
   return new Chart(ctx, {
     data: {
@@ -125,7 +131,7 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
         },
         {
           type: 'line',
-          label: 'Travel Consumption',
+          label: 'Travel Emissions',
           data: dataSets[1],
           yAxisID: "ystack",
           fill: {
@@ -138,7 +144,7 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
         },
         {
           type: 'line',
-          label: 'Home Consumption',
+          label: 'Home Emissions',
           data: dataSets[0],
           yAxisID: "ystack",
           fill: {
@@ -151,7 +157,7 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
         },
         {
           type: 'line',
-          label: 'Office Consumption',
+          label: 'Office Emissions',
           data: dataSets[2],
           yAxisID: "ystack",
           fill: {
@@ -189,7 +195,7 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
           display: true,
           position: "left",
           min: 0,
-          sugguestMax: Math.max(goal, ...dataSets),
+          suggestedMax: calcMax(dataSets, goal),
           title: {
             display: true,
             text: 'CO2 emission (kt)',
@@ -198,10 +204,10 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
         },
         ygoal: {
           type: "linear",
-          display: true,
+          display: false,
           stacked: false,
           min: 0,
-          sugguestMax: Math.max(goal, ...dataSets)
+          suggestedMax: calcMax(dataSets, goal)
         },
         yb2o: {
           type: "linear",
@@ -210,7 +216,7 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
           beginAtZero: true,
           min: 0,
           suggestedMin: 0,
-          sugguestMax: Math.max(goal, ...dataSets)
+          suggestedMax: calcMax(dataSets, goal)
         }
       }
     }

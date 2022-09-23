@@ -364,7 +364,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                       step="1"
                       .modelValue="${this.inputsGeneralSliders["daysPerWeek"]}"
                       @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                      label="# Days per Week in Office"
+                      label="Number Days per Week in Office"
                       unit="Days"
                     ></ing-input-range>
                   </form>
