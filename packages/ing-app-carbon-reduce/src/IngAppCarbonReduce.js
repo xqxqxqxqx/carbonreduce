@@ -544,6 +544,10 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
         margin: ${spacer8} ${spacer24};
       }
 
+      .slider-card .form-control {
+        border: none !important;;
+      }
+
       /* Start of Custom scrollbar */
       ::-webkit-scrollbar {
         width: 10px;
