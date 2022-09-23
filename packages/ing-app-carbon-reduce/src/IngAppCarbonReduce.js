@@ -313,9 +313,9 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                   <img width="80" src="../../assets/sustainable.png" alt="Illustration" style="flex: 1;">
                   <p style="flex: 2;"> ING will achieve
                     ${this.baselineTotalCO2 >= this.achievedCO2 ? html`
-                      <span class="card-highlight">${this.baselineTotalCO2 - this.achievedCO2}</span> ton CO2<br>less than the baseline
+                      <span class="card-highlight">${this.baselineTotalCO2 - this.achievedCO2}</span> kiloton CO2<br>less than the baseline
                     ` : html`
-                      <span class="card-highlight">${this.achievedCO2 - this.baselineTotalCO2 }</span> ton CO2<br>more than the baseline
+                      <span class="card-highlight">${this.achievedCO2 - this.baselineTotalCO2 }</span> kiloton CO2<br>more than the baseline
                     `}
                   </p>
                 </div>

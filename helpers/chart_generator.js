@@ -176,7 +176,12 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
           stacked: true,
           display: true,
           min: 0,
-          beginAtZero: true
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Employees back to office (%)',
+            color: helpers.color(WHITE).alpha(0.35).rgbString(),
+          }
         },
         ystack: {
           type: "linear",
@@ -184,7 +189,12 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
           display: true,
           position: "left",
           min: 0,
-          suggestedMax: 300
+          suggestedMax: 300,
+          title: {
+            display: true,
+            text: 'CO2 emission (kt)',
+            color: helpers.color(WHITE).alpha(0.35).rgbString(),
+          }
         },
         ygoal: {
           type: "linear",
