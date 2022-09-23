@@ -16,23 +16,34 @@ export function calcTravelUsage(kmPerWeek, mode) {
 }
 
 export function calcHomeGasUsage(inputs) {
-  return  2*inputs["gasUsage"] + inputs["electricityUsage"];
+  const coeff = 2.4534;
+  const intercept = 42.3542
+  return  coeff*inputs["gasUsage"] + intercept;
 }
 
 export function calcHomeElectricityUsage(inputs) {
-return  inputs["gasUsage"] + inputs["electricityUsage"];
+  const coeff = 2.4534;
+  const intercept = 42.3542
+  return  coeff*inputs["electricityUsage"] + intercept;
 }
 
 export function calcOfficeGasUsage(inputs) {
-  return inputs["gasUsage"]/70 + 2*inputs["electricityUsage"];
+  const coeff = 2.4534;
+  const intercept = 42.3542
+  return  coeff*inputs["gasUsage"] + intercept;
 }
 
 export function calcOfficeElectricityUsage(inputs) {
-  return inputs["gasUsage"]/50 + inputs["electricityUsage"];
+  const coeff = 2.4534;
+  const intercept = 42.3542
+  return  coeff*inputs["electricityUsage"] + intercept;
+
 }
 
 export function calcCarUsage(inputs) {
-  return 2*inputs["kilometersPerWeek"];
+  const coeff = 2.4534;
+  const intercept = 42.3542
+  return  coeff*inputs["kilometersPerWeek"] + intercept;
 }
 
 export function calcNonCarUsage(inputs) {
