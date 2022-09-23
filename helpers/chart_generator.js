@@ -228,7 +228,7 @@ export function createDoughnutChart (ctx, achieved, goal) {
     type: 'doughnut',
     data: {
       datasets: [{
-        data: [achieved, achieved <= goal ? goal - achieved : 0],
+        data: [goal, goal <= achieved ? achieved - goal : 0],
         backgroundColor: [
           orange,
           'rgba(255, 255, 255, 0.1)'
