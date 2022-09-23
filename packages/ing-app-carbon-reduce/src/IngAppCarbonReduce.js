@@ -35,9 +35,9 @@ import {
 import {
   calcCarUsage,
   calcHomeElectricityUsage,
-  calcHomeHeatingUsage,
+  calcHomeGasUsage,
   calcHomeUsage, calcOfficeElectricityUsage,
-  calcOfficeHeatingUsage, calcOfficeUsage, calcPublicTransportUsage, calcTravelUsage
+  calcOfficeGasUsage, calcOfficeUsage, calcNonCarUsage, calcTravelUsage
 } from "../../../helpers/formulas";
 
 Chart.register(...registerables);
@@ -95,18 +95,17 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     // Baseline slider input values
     this.inputsGeneralSlidersBaseline = {
       "backToOffice": 50,
-      "daysPerWeek": 2,
-      "buildingsOpen": 15
+      "daysPerWeek": 2
     };
     this.inputsHomeSlidersBaseline = {
-      "floorSize": 100,
-      "insulation": 10,
+      "gasUsage": 100,
+      "electricityUsage": 10,
       "insideTemp": 20,
       "renewableEnergy": 20000
     };
     this.inputsOfficeSlidersBaseline = {
-      "floorSize": 10000,
-      "insulation": 10,
+      "gasUsage": 10000,
+      "electricityUsage": 10,
       "insideTemp": 20,
       "renewableEnergy": 20000
     };
@@ -253,11 +252,11 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
   _getPolarDataSet() {
     // TODO: input should be taken from sliders
     return [
-      calcOfficeHeatingUsage(this.inputsOfficeSliders),
+      calcOfficeGasUsage(this.inputsOfficeSliders),
       calcOfficeElectricityUsage(this.inputsOfficeSliders),
       calcCarUsage(this.inputsTravelSliders),
-      calcPublicTransportUsage(this.inputsTravelSliders),
-      calcHomeHeatingUsage(this.inputsHomeSliders),
+      calcNonCarUsage(this.inputsTravelSliders),
+      calcHomeGasUsage(this.inputsHomeSliders),
       calcHomeElectricityUsage(this.inputsHomeSliders)
     ]
   }
@@ -332,119 +331,69 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                     label="# Days per Week in Office"
                     unit="Days"
                   ></ing-input-range>
-                  <ing-input-range
-                    id="buildingsOpen"
-                    name="buildingsOpen"
-                    min="0"
-                    max="20"
-                    step="1"
-                    .modelValue="${this.inputsGeneralSliders["buildingsOpen"]}"
-                    @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                    label="Buildings Open"
-                  ></ing-input-range>
                 </form>
               </ing-form>
               <ing-accordion>
                 <h3 slot="invoker">
-                  <ing-accordion-invoker-button>Home</ing-accordion-invoker-button>
+                  <ing-accordion-invoker-button>Home Consumption</ing-accordion-invoker-button>
                 </h3>
                 <ing-accordion-content slot="content">
                   <ing-form @submit="${ev => this._handleHomeValueChange(ev)}">
                     <form>
                       <ing-input-range
-                        name="floorSize"
+                        name="gasUsage"
                         min="0"
                         max="500"
                         step="10"
-                        .modelValue="${this.inputsHomeSliders["floorSize"]}"
+                        .modelValue="${this.inputsHomeSliders["gasUsage"]}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Floor Size"
-                        unit="square meters"
+                        label="Gas Consumption"
+                        unit="cubic meters"
                       ></ing-input-range>
                       <ing-input-range
-                        name="insulation"
+                        name="electricityUsage"
                         min="0"
                         max="100"
                         step="1"
-                        .modelValue="${this.inputsHomeSliders["insulation"]}"
+                        .modelValue="${this.inputsHomeSliders["electricityUsage"]}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="House Insulation"
-                        unit="R-value"
-                      ></ing-input-range>
-                      <ing-input-range
-                        name="insideTemp"
-                        min="0"
-                        max="30"
-                        step="1"
-                        .modelValue="${this.inputsHomeSliders["insideTemp"]}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Home Inside Temperature"
-                        unit="Degrees Celsius"
-                      ></ing-input-range>
-                      <ing-input-range
-                        name="renewableEnergy"
-                        min="0"
-                        max="50000"
-                        step="100"
-                        .modelValue="${this.inputsHomeSliders["renewableEnergy"]}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Renewable Energy Generation Capacity"
+                        label="Electricity Consumption"
                         unit="kWh"
                       ></ing-input-range>
                     </form>
                   </ing-form>
                 </ing-accordion-content>
                 <h3 slot="invoker">
-                  <ing-accordion-invoker-button>Office</ing-accordion-invoker-button>
+                  <ing-accordion-invoker-button>Office Consumption</ing-accordion-invoker-button>
                 </h3>
                 <ing-accordion-content slot="content">
                   <ing-form @submit="${ev => this._handleOfficeValueChange(ev)}">
                     <form>
                       <ing-input-range
-                        name="floorSize"
+                        name="gasUsage"
                         min="0"
                         max="50000"
                         step="500"
-                        .modelValue="${this.inputsOfficeSliders["floorSize"]}"
+                        .modelValue="${this.inputsOfficeSliders["gasUsage"]}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Floor Size"
-                        unit="square meters"
+                        label="Gas Consumption"
+                        unit="cubic meters"
                       ></ing-input-range>
                       <ing-input-range
-                        name="insulation"
+                        name="electricityUsage"
                         min="0"
                         max="100"
                         step="1"
-                        .modelValue="${this.inputsOfficeSliders["insulation"]}"
+                        .modelValue="${this.inputsOfficeSliders["electricityUsage"]}"
                         @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Building Insulation"
-                        unit="R-value"
-                      ></ing-input-range>
-                      <ing-input-range
-                        name="insideTemp"
-                        min="0"
-                        max="30"
-                        step="1"
-                        .modelValue="${this.inputsOfficeSliders["insideTemp"]}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Building Inside Temperature"
-                        unit="Degrees Celsius"
-                      ></ing-input-range>
-                      <ing-input-range
-                        name="renewableEnergy"
-                        min="0"
-                        max="50000"
-                        step="100"
-                        .modelValue="${this.inputsOfficeSliders["renewableEnergy"]}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Renewable Energy Generation Capacity"
+                        label="Electricity Consumption"
                         unit="kWh"
                       ></ing-input-range>
                     </form>
                   </ing-form>
                 </ing-accordion-content>
                 <h3 slot="invoker">
-                  <ing-accordion-invoker-button>Travel</ing-accordion-invoker-button>
+                  <ing-accordion-invoker-button>Business Travel/Commute</ing-accordion-invoker-button>
                 </h3>
                 <ing-accordion-content slot="content">
                   <ing-form @submit="${ev => this._handleTravelValueChange(ev)}">
