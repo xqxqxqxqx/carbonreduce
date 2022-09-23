@@ -1,25 +1,25 @@
 import {Chart, registerables} from 'chart.js';
 import * as helpers from 'chart.js/helpers';
+import {orange} from 'ing-web';
 
 Chart.register(...registerables);
 
-const COLOR_HOME = 'rgb(255, 208, 152)';
-const COLOR_OFFICE = 'rgb(255, 178, 136)';
-const COLOR_TRAVEL = 'rgb(255, 168, 168)';
-const RED = 'rgb(255, 0, 0)';
-const BLUE = 'rgb(0, 0, 255)';
+const COLOR_HOME = 'rgb(255, 166, 161)';
+const COLOR_OFFICE = 'rgb(255, 149, 112)';
+const COLOR_TRAVEL = 'rgb(249, 212, 192)';
+const WHITE = 'rgb(255, 255, 255)';
 
 export function createPolarChart (ctx, maxVal, dataSet) {
   return new Chart(ctx, {
     type: 'polarArea',
     data: {
       labels: [
-        'Office heating',
+        'Office gas',
         'Office electricity',
         'Car travel',
         'Non-car travel',
         'Home electricity',
-        'Home heating'
+        'Home gas'
       ],
       datasets: [{
         data: dataSet,
@@ -104,7 +104,10 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
           data: Array(100).fill(goal),
           yAxisID: "ygoal",
           fill: false,
-          borderColor: RED,
+          borderColor: orange,
+          borderWidth: 2,
+          borderDash: [2],
+          borderJoinStyle: 'round',
           tension: 0
         },
         {
@@ -115,7 +118,9 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
           yAxisID: "yb2o",
           fill: false,
           indexAxis: 'y',
-          borderColor: BLUE,
+          borderColor: WHITE,
+          borderWidth: 2,
+          borderDash: [2],
           tension: 0
         },
         {
@@ -198,6 +203,25 @@ export function createAreaChart (ctx, dataSets, goal, b20) {
           suggestedMax: 100
         }
       }
+    }
+  });
+}
+
+export function createDoughnutChart (ctx, achieved, goal) {
+  return new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data: [achieved, achieved <= goal ? goal - achieved : 0],
+        backgroundColor: [
+          orange,
+          'rgba(255, 255, 255, 0.1)'
+        ]
+      }]
+    },
+    options: {
+      borderWidth: 0,
+      cutout: '80%'
     }
   });
 }

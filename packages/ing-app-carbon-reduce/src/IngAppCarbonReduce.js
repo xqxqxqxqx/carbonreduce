@@ -13,10 +13,15 @@ import {
   white,
   font19Mixin,
   spacer64,
+  spacer8,
   IngAccordion,
   IngIcon,
   registerDefaultIconsets,
-  IngButton
+  IngButton,
+  font16Mixin,
+  font24BoldMixin,
+  orange,
+  spacer32
 } from 'ing-web';
 
 import { IngHeader } from '../../ing-example-nav-bar/src/IngHeader.js';
@@ -30,6 +35,7 @@ import {
   createPolarChart,
   createPolarChartBaseline,
   createAreaChart,
+  createDoughnutChart
 } from '../../../helpers/chart_generator.js';
 
 import {
@@ -77,6 +83,10 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       polarChartDataset: { type: Array },
       daysPerWeekSliderValue: { type: Number },
       goalCO2: { type: Number },
+      achievedCO2: { type: Number },
+      baselineTotalCO2: { type: Number },
+      doughnutChart: { type: Object },
+      ctxDoughnutChart: { type: Object },
       inputsGeneralSliders: { type: Object },
       inputsHomeSliders: { type: Object },
       inputsOfficeSliders: { type: Object },
@@ -116,6 +126,8 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     this.inputsTravelSliders = this.inputsTravelSlidersBaseline;
 
     this.goalCO2 = 150;
+    this.achievedCO2 = 67;
+    this.baselineTotalCO2 = 300;
 
     this.title = 'Carbon Configurator';
     this.polarChartBaselineDataset = this._getPolarDataSet();
@@ -135,17 +147,21 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     this.ctxAreaChart = this.renderRoot.querySelector( '#area-chart' ).getContext('2d');
     this.ctxPolarChart = this.renderRoot.querySelector( '#polar-chart' ).getContext('2d');
     this.ctxPolarChartBaseline = this.renderRoot.querySelector( '#polar-chart-baseline' ).getContext('2d');
+    this.ctxDoughnutChart = this.renderRoot.querySelector( '#doughnut-chart' ).getContext('2d');
 
     // Initialise all charts with default baseline
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
     this.polarChartBaseline = createPolarChartBaseline(this.ctxPolarChartBaseline, this.polarChartMaxVal, this.polarChartBaselineDataset);
     this.areaChart = createAreaChart(this.ctxAreaChart, this.areaChartBaseline, this.goalCO2, this.inputsHomeSliders["backToOffice"]);
-    // Sliders' position is set as fixed causing the element taken out of flow of DOM and flexbox
-    // This is a workaround to configure its width in flex-box way
+    this.doughnutChart = createDoughnutChart(this.ctxDoughnutChart, this.achievedCO2, this.goalCO2);
+    // Below elements'position config caused themselves taken out of flow of DOM and flexbox
+    // This is a workaround to configure their width in flex-box way
     setTimeout(function(){
-      let elm = this.shadowRoot.querySelector(".slider-card");
-      elm.style.width = window.getComputedStyle(elm.parentElement).width;
-    }.bind(this), 0);
+      let elmSlider = this.shadowRoot.querySelector(".slider-card");
+      elmSlider.style.width = window.getComputedStyle(elmSlider.parentElement).width;
+      let elmBackground = this.shadowRoot.querySelector("#polar-background");
+      elmBackground.style.width = window.getComputedStyle(elmBackground.parentElement).width;
+    }.bind(this), 80);
   }
 
   // Submit form programmatically when slider changes so that we can read values from form object modelValue
@@ -275,8 +291,9 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
   render() {
     return html`
       <ing-example-nav-bar></ing-example-nav-bar>
-      <div class="page-container">
+      <div class="page-container flexbox">
         <div class="column1">
+          <img id="polar-background" src="../../assets/polarBackground.png" alt="Background">
           <div>
             <div class="polar-chart">
               <canvas id="polar-chart-baseline" width="300" height="300"></canvas>
@@ -284,130 +301,147 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
             </div>
           </div>
           <div>
-            <ing-card class="ing_card">
+            <ing-card>
               <div slot="heading" class="card-title">Back-to-office Impact Overview</div>
               <div slot="content">
                 <canvas id="area-chart" width="400" height="100"></canvas>
               </div>
             </ing-card>
-            <ing-card class="ing_card">
-              <h2 slot="heading">${this.title}</h2>
-              <p slot="content"> Let's win this! </p>
-            </ing-card>
-            <ing-card class="ing_card">
-              <h2 slot="heading">${this.title}</h2>
-              <p slot="content"> Let's win this! </p>
-            </ing-card>
+            <div class="flexbox achievement__container">
+              <ing-card style="flex: 1;">
+                <div slot="content" class="achievement__flexbox">
+                  <img width="80" src="../../assets/sustainable.png" alt="Illustration" style="flex: 1;">
+                  <p style="flex: 2;"> ING will achieve
+                    ${this.baselineTotalCO2 >= this.achievedCO2 ? html`
+                      <span class="card-highlight">${this.baselineTotalCO2 - this.achievedCO2}</span> ton CO2<br>less than the baseline
+                    ` : html`
+                      <span class="card-highlight">${this.achievedCO2 - this.baselineTotalCO2 }</span> ton CO2<br>more than the baseline
+                    `}
+                  </p>
+                </div>
+              </ing-card>
+              <ing-card style="flex: 1;">
+                <div slot="content" class="achievement__flexbox">
+                  <div style="flex: 1;">
+                    <div class="doughnut-label">${this.achievedCO2} / ${this.goalCO2}</div>
+                    <canvas id="doughnut-chart" width="90" height="80"></canvas>
+                  </div>
+                  <p style="flex: 2;">ING will achieve<span class="card-highlight">${Math.round(this.achievedCO2/this.goalCO2 * 100)}%</span><br>of the CO2 emission target</p>
+                </div>
+              </ing-card>
+            </div>
           </div>
         </div>
         <div class="column2">
-          <ing-card class="ing_card slider-card">
-            <div slot="content" class="slider-content">
-              <ing-form  @submit="${ev => this._handleGeneralValueChange(ev)}"">
-                <form>
-                  <ing-input-range
-                    id="backToOffice"
-                    name="backToOffice"
-                    min="0"
-                    max="100"
-                    step="1"
-                    .modelValue="${this.inputsGeneralSliders["backToOffice"]}"
-                    @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                    unit="%"
-                    label="Employees Back to Office"
-                  ></ing-input-range>
-                  <ing-input-range
-                    id="daysPerWeek"
-                    name="daysPerWeek"
-                    min="0"
-                    max="5"
-                    step="1"
-                    .modelValue="${this.inputsGeneralSliders["daysPerWeek"]}"
-                    @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                    label="# Days per Week in Office"
-                    unit="Days"
-                  ></ing-input-range>
-                </form>
-              </ing-form>
-              <ing-accordion>
-                <h3 slot="invoker">
-                  <ing-accordion-invoker-button>Home Consumption</ing-accordion-invoker-button>
-                </h3>
-                <ing-accordion-content slot="content">
-                  <ing-form @submit="${ev => this._handleHomeValueChange(ev)}">
-                    <form>
-                      <ing-input-range
-                        name="gasUsage"
-                        min="0"
-                        max="500"
-                        step="10"
-                        .modelValue="${this.inputsHomeSliders["gasUsage"]}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Gas Consumption"
-                        unit="cubic meters"
-                      ></ing-input-range>
-                      <ing-input-range
-                        name="electricityUsage"
-                        min="0"
-                        max="100"
-                        step="1"
-                        .modelValue="${this.inputsHomeSliders["electricityUsage"]}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Electricity Consumption"
-                        unit="kWh"
-                      ></ing-input-range>
-                    </form>
-                  </ing-form>
-                </ing-accordion-content>
-                <h3 slot="invoker">
-                  <ing-accordion-invoker-button>Office Consumption</ing-accordion-invoker-button>
-                </h3>
-                <ing-accordion-content slot="content">
-                  <ing-form @submit="${ev => this._handleOfficeValueChange(ev)}">
-                    <form>
-                      <ing-input-range
-                        name="gasUsage"
-                        min="0"
-                        max="50000"
-                        step="500"
-                        .modelValue="${this.inputsOfficeSliders["gasUsage"]}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Gas Consumption"
-                        unit="cubic meters"
-                      ></ing-input-range>
-                      <ing-input-range
-                        name="electricityUsage"
-                        min="0"
-                        max="100"
-                        step="1"
-                        .modelValue="${this.inputsOfficeSliders["electricityUsage"]}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Electricity Consumption"
-                        unit="kWh"
-                      ></ing-input-range>
-                    </form>
-                  </ing-form>
-                </ing-accordion-content>
-                <h3 slot="invoker">
-                  <ing-accordion-invoker-button>Business Travel/Commute</ing-accordion-invoker-button>
-                </h3>
-                <ing-accordion-content slot="content">
-                  <ing-form @submit="${ev => this._handleTravelValueChange(ev)}">
-                    <form>
-                      <ing-input-range
-                        name="kilometersPerWeek"
-                        min="0"
-                        max="500"
-                        step="10"
-                        .modelValue="${this.inputsTravelSliders["kilometersPerWeek"]}"
-                        @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
-                        label="Car"
-                        unit="km/week"
-                      ></ing-input-range>
-                    </form>
-                  </ing-form>
-                </ing-accordion-content>
-              </ing-accordion>
+          <ing-card class="slider-card">
+            <div slot="content">
+              <div class="slider-content">
+                <ing-form  @submit="${ev => this._handleGeneralValueChange(ev)}"">
+                  <form>
+                    <ing-input-range
+                      id="backToOffice"
+                      name="backToOffice"
+                      min="0"
+                      max="100"
+                      step="1"
+                      .modelValue="${this.inputsGeneralSliders["backToOffice"]}"
+                      @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                      unit="%"
+                      label="Employees Back to Office"
+                    ></ing-input-range>
+                    <ing-input-range
+                      id="daysPerWeek"
+                      name="daysPerWeek"
+                      min="0"
+                      max="5"
+                      step="1"
+                      .modelValue="${this.inputsGeneralSliders["daysPerWeek"]}"
+                      @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                      label="# Days per Week in Office"
+                      unit="Days"
+                    ></ing-input-range>
+                  </form>
+                </ing-form>
+                <ing-accordion>
+                  <h3 slot="invoker">
+                    <ing-accordion-invoker-button>Home Consumption</ing-accordion-invoker-button>
+                  </h3>
+                  <ing-accordion-content slot="content">
+                    <ing-form @submit="${ev => this._handleHomeValueChange(ev)}">
+                      <form>
+                        <ing-input-range
+                          name="gasUsage"
+                          min="0"
+                          max="500"
+                          step="10"
+                          .modelValue="${this.inputsHomeSliders["gasUsage"]}"
+                          @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                          label="Gas Consumption"
+                          unit="cubic meters"
+                        ></ing-input-range>
+                        <ing-input-range
+                          name="electricityUsage"
+                          min="0"
+                          max="100"
+                          step="1"
+                          .modelValue="${this.inputsHomeSliders["electricityUsage"]}"
+                          @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                          label="Electricity Consumption"
+                          unit="kWh"
+                        ></ing-input-range>
+                      </form>
+                    </ing-form>
+                  </ing-accordion-content>
+                  <h3 slot="invoker">
+                    <ing-accordion-invoker-button>Office Consumption</ing-accordion-invoker-button>
+                  </h3>
+                  <ing-accordion-content slot="content">
+                    <ing-form @submit="${ev => this._handleOfficeValueChange(ev)}">
+                      <form>
+                        <ing-input-range
+                          name="gasUsage"
+                          min="0"
+                          max="50000"
+                          step="500"
+                          .modelValue="${this.inputsOfficeSliders["gasUsage"]}"
+                          @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                          label="Gas Consumption"
+                          unit="cubic meters"
+                        ></ing-input-range>
+                        <ing-input-range
+                          name="electricityUsage"
+                          min="0"
+                          max="100"
+                          step="1"
+                          .modelValue="${this.inputsOfficeSliders["electricityUsage"]}"
+                          @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                          label="Electricity Consumption"
+                          unit="kWh"
+                        ></ing-input-range>
+                      </form>
+                    </ing-form>
+                  </ing-accordion-content>
+                  <h3 slot="invoker">
+                    <ing-accordion-invoker-button>Business Travel/Commute</ing-accordion-invoker-button>
+                  </h3>
+                  <ing-accordion-content slot="content">
+                    <ing-form @submit="${ev => this._handleTravelValueChange(ev)}">
+                      <form>
+                        <ing-input-range
+                          name="kilometersPerWeek"
+                          min="0"
+                          max="500"
+                          step="10"
+                          .modelValue="${this.inputsTravelSliders["kilometersPerWeek"]}"
+                          @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
+                          label="Car"
+                          unit="km/week"
+                        ></ing-input-range>
+                      </form>
+                    </ing-form>
+                  </ing-accordion-content>
+                </ing-accordion>
+              </div>
               <ing-button @click="${ev => this._handleSetNewBaseline(ev)}" class="button__baseline">Set New Baseline</ing-button>
             </div>
           </ing-card>
@@ -428,19 +462,13 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
         position: relative;
         top: ${spacer64};
         text-align: center;
-        margin: ${spacer12}  ${spacer24};
-        display: flex;
-        gap: ${spacer12}
-      }
+        margin: ${spacer8}  ${spacer24};
+      }page-container
 
       .button__baseline {
         background-color: black;
         border-color: white;
         margin: 12px;
-      }
-
-      .ing_card {
-        background-color: ${black80};
       }
 
       .column1 {
@@ -467,14 +495,40 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
         margin: auto;
       }
 
+      #polar-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+      }
+
       #polar-chart-baseline {
         position: absolute;
         pointer-events: none;
       }
 
+      #doughnut-chart {
+        pointer-events: none;
+      }
+
+      .doughnut-label {
+        ${font16Mixin()};
+        color: ${orange};
+        position: absolute;
+        top: 47%;
+        text-align: center;
+        width: 27%;
+      }
+
       .card-title {
         ${font19Mixin()};
         color: ${white};
+      }
+
+      .card-highlight {
+        ${font24BoldMixin()};
+        color: ${orange};
+        margin: ${spacer8};
       }
 
       .slider-card {
@@ -483,9 +537,33 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       }
 
       .slider-content {
-        height: calc(100vh - 142px);
+        height: calc(100vh - 211px);
         overflow-y: auto;
-        padding-right: 24px;
+        padding-right: ${spacer24};
+        margin-bottom: ${spacer24}
+      }
+
+      .flexbox {
+        display: flex;
+        gap: ${spacer12};
+        justify-content: center;
+      }
+
+      .achievement__container {
+        position: relative;
+        top: -6px;
+      }
+
+      .achievement__flexbox {
+        display: flex;
+        gap: ${spacer32};
+        justify-content: center;
+        align-items: center;
+        margin: ${spacer8} ${spacer24};
+      }
+
+      .slider-card .form-control {
+        border: none !important;;
       }
 
       /* Start of Custom scrollbar */
