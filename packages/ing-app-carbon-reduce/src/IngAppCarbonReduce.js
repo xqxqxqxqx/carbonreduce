@@ -108,15 +108,15 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       "daysPerWeek": 2
     };
     this.inputsHomeSlidersBaseline = {
-      "gasUsage": 100,
-      "electricityUsage": 10
+      "gasUsage": 500,
+      "electricityUsage": 1000
     };
     this.inputsOfficeSlidersBaseline = {
-      "gasUsage": 200,
-      "electricityUsage": 10
+      "gasUsage": 1000,
+      "electricityUsage": 2000
     };
     this.inputsTravelSlidersBaseline = {
-      "kilometersPerWeek": 30
+      "kilometersPerWeek": 300
     };
 
     // Set initial input values
@@ -137,9 +137,8 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
       ...this.polarChartBaselineDataset
     );
 
-    this.areaChartBaseline = [Array.from({length: 101}, () => Math.floor(Math.random() * 100)),
-      Array.from({length: 101}, () => Math.floor(Math.random() * 100)),
-      Array.from({length: 101}, () => Math.floor(Math.random() * 100))];
+    this.areaChartBaseline = this._getAreaDataSet();
+    console.log(this.areaChartBaseline)
   }
 
   firstUpdated() {
@@ -152,7 +151,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
     // Initialise all charts with default baseline
     this.polarChart = createPolarChart(this.ctxPolarChart, this.polarChartMaxVal, this._getPolarDataSet());
     this.polarChartBaseline = createPolarChartBaseline(this.ctxPolarChartBaseline, this.polarChartMaxVal, this.polarChartBaselineDataset);
-    this.areaChart = createAreaChart(this.ctxAreaChart, this.areaChartBaseline, this.goalCO2, this.inputsHomeSliders["backToOffice"]);
+    this.areaChart = createAreaChart(this.ctxAreaChart, this.areaChartBaseline, this.goalCO2, this.inputsGeneralSliders["backToOffice"]);
     this.doughnutChart = createDoughnutChart(this.ctxDoughnutChart, this.achievedCO2, this.goalCO2);
     // Below elements'position config caused themselves taken out of flow of DOM and flexbox
     // This is a workaround to configure their width in flex-box way
@@ -254,22 +253,27 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
 
   _getAreaDataSet() {
     // TODO: input should be taken from sliders
-    return [
-      calcHomeUsage(),
-      calcTravelUsage(),
-      calcOfficeUsage()
-    ]
+    const homeUsage = calcHomeUsage(this.inputsHomeSliders);
+    const officeUsage = calcOfficeUsage(this.inputsOfficeSliders);
+    const travelUsage = calcTravelUsage(this.inputsTravelSliders);
+
+    // TODO: Add impact of days per week
+    const homeChart = Array.from({length: 100}, (e, i) => homeUsage * (1-(i+1)/100));
+    const officeChart = Array.from({length: 100}, (e, i) => officeUsage * (i+1)/100);
+    const travelChart = Array.from({length: 100}, (e, i) => travelUsage * (i+1)/100);
+
+    return [homeChart, travelChart, officeChart];
   }
 
   _getPolarDataSet() {
     // TODO: input should be taken from sliders
     return [
-      calcOfficeGasUsage(this.inputsOfficeSliders),
-      calcOfficeElectricityUsage(this.inputsOfficeSliders),
-      calcCarUsage(this.inputsTravelSliders),
-      calcNonCarUsage(this.inputsTravelSliders),
-      calcHomeGasUsage(this.inputsHomeSliders),
-      calcHomeElectricityUsage(this.inputsHomeSliders)
+      calcOfficeGasUsage(this.inputsOfficeSliders, this.inputsGeneralSliders),
+      calcOfficeElectricityUsage(this.inputsOfficeSliders, this.inputsGeneralSliders),
+      calcCarUsage(this.inputsTravelSliders, this.inputsGeneralSliders),
+      calcNonCarUsage(this.inputsTravelSliders, this.inputsGeneralSliders),
+      calcHomeGasUsage(this.inputsHomeSliders, this.inputsGeneralSliders),
+      calcHomeElectricityUsage(this.inputsHomeSliders, this.inputsGeneralSliders)
     ]
   }
 
@@ -372,7 +376,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         <ing-input-range
                           name="gasUsage"
                           min="0"
-                          max="500"
+                          max="1000"
                           step="10"
                           .modelValue="${this.inputsHomeSliders["gasUsage"]}"
                           @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
@@ -382,8 +386,8 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         <ing-input-range
                           name="electricityUsage"
                           min="0"
-                          max="100"
-                          step="1"
+                          max="5000"
+                          step="10"
                           .modelValue="${this.inputsHomeSliders["electricityUsage"]}"
                           @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                           label="Electricity Consumption"
@@ -401,22 +405,22 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         <ing-input-range
                           name="gasUsage"
                           min="0"
-                          max="50000"
-                          step="500"
+                          max="2000"
+                          step="10"
                           .modelValue="${this.inputsOfficeSliders["gasUsage"]}"
                           @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                           label="Gas Consumption"
-                          unit="cubic meters"
+                          unit="GJ"
                         ></ing-input-range>
                         <ing-input-range
                           name="electricityUsage"
                           min="0"
-                          max="100"
-                          step="1"
+                          max="10000"
+                          step="10"
                           .modelValue="${this.inputsOfficeSliders["electricityUsage"]}"
                           @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
                           label="Electricity Consumption"
-                          unit="kWh"
+                          unit="MWh"
                         ></ing-input-range>
                       </form>
                     </ing-form>
@@ -430,7 +434,7 @@ export class IngAppCarbonReduce extends ScopedElementsMixin(LitElement) {
                         <ing-input-range
                           name="kilometersPerWeek"
                           min="0"
-                          max="500"
+                          max="1000"
                           step="10"
                           .modelValue="${this.inputsTravelSliders["kilometersPerWeek"]}"
                           @model-value-changed="${ev => this._handleSliderValueChange(ev)}"
